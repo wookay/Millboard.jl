@@ -7,6 +7,7 @@ type Mill
   option::Dict
   Mill(board) = new(board, Dict())
   Mill(board, option::Pair) = new(board, Dict(option))
+  Mill(board, option...) = new(board, Dict(option))
 end
 
 type Tile
@@ -26,13 +27,18 @@ function slate(tile::Tile)
   [join(A[i,:], " ") for i=1:m]
 end
 
-function cell(box::Array)
-  m,n = size(box)
+function cell(box::Array, option::Dict)
+  m,n = size(box[:,:])
+  0 == m && return [" "]
   A = similar(box, AbstractString)
   W = similar(box, Int)
+  box_repr = string
+  if haskey(option, :repr)
+    box_repr = option[:repr]
+  end
   for i=1:m
     for j=1:n
-      el = box[i,j] |> string
+      el = box[i,j] |> box_repr
       A[i,j] = el
       W[i,j] = length(el)
     end
@@ -40,7 +46,7 @@ function cell(box::Array)
   slate(Tile(A, W))
 end
 
-function cell(box::Number)
+function cell(box::Number, option::Dict)
   el = box |> string
   A = [el][:,:]
   W = [length(el)][:,:]
@@ -50,43 +56,8 @@ end
 
 # table
 
-function table(board::Array, ::Type{Val{:Number}})
-  rows,cols = size(board)
-  B = Array(Any, rows, cols)
-  S = similar(B, Int)
-  for i=1:rows
-    for j=1:cols
-      c = board[i,j] |> string
-      B[i,j] = c
-      S[i,j] = length(c)
-    end
-  end
-  B,S
-end
-
-function table(board::Array)
-  if eltype(board) <: Number
-    table(board, Val{:Number})
-  end
-end
-
-function table(board::Tuple)
-  cols = length(board)
-  rows = size(first(board), 1)
-  B = Array(Any, rows, cols)
-  S = similar(B, Int)
-  for j=1:cols
-    c = cell(board[j])
-    for i=1:rows
-      B[i,j] = c[i]
-      S[i,j] = length(c[i])
-    end
-  end
-  B,S
-end
-
 function table(mill::Mill)
-  B,S = table(mill.board)
+  B,S = table_board(mill.board, mill.option)
   rows,cols = size(S)
   buf = IOBuffer()
   if haskey(mill.option, :title)
@@ -94,10 +65,19 @@ function table(mill::Mill)
     A = Array(AbstractString, 1, cols)
     for j=1:cols
       titles = mill.option[:title]
-      title = titles[j]
-      A[1,j] = Base.cpad(title, S[1,j])
+      title = string(titles[j])
+      title_width = S[1,j] + 2
+      if haskey(mill.option, :has_long_title) && mill.option[:has_long_title]
+        A[1,j] = Base.cpad(title, title_width)
+      else
+        if length(title) > title_width
+          A[1,j] = Base.cpad(title[1:title_width], title_width)
+        else
+          A[1,j] = Base.cpad(title, title_width)
+        end
+      end
     end
-    l = join(A, " | ") |> surround
+    l = surround(join(A, "|"), space="")
     writeln(buf, l)
     writeln(buf, border(S,"=","+"))
   else
@@ -109,6 +89,68 @@ function table(mill::Mill)
   end
   write(buf, border(S,"-","+"))
   takebuf_string(buf)
+end
+
+
+function table_board(board::Tuple, option::Dict)
+  table_array(collect(board), option)
+end
+
+function table_board(board::Array, option::Dict)
+  if eltype(board) <: Number
+    table_number(board, option)
+  elseif eltype(board) <: Any
+    table_array(board, option)
+  end
+end
+
+function table_number(board::Array, option::Dict)
+  rows,cols = size(board)
+  B = Array(Any, rows, cols)
+  S = similar(B, Int)
+  for i=1:rows
+    for j=1:cols
+      c = board[i,j] |> string
+      B[i,j] = c
+      if haskey(option, :has_long_title) && option[:has_long_title]
+        S[i,j] = max(option[:title][i], length(c))
+      else
+        S[i,j] = length(c)
+      end
+    end
+  end
+  B,S
+end
+
+function table_array(board::AbstractArray, option::Dict)
+  cols = length(board)
+  rows = 0
+  for b in board
+    rows = max(rows, size(b, 1))
+  end
+  B = Array(Any, rows, cols)
+  S = similar(B, Int)
+  for j=1:cols
+    c = cell(board[j], option)
+    len_c = length(c)
+    for i=1:rows
+      if len_c >= i
+        if haskey(option, :has_long_title) && option[:has_long_title]
+          S[i,j] = max(length(string(option[:title][j])), length(c[i]))
+          B[i,j] = Base.cpad(c[i], S[i,j])
+        else
+          S[i,j] = length(c[i])
+          B[i,j] = c[i]
+        end
+      else
+        if len_c > 0
+          S[i,j] = S[1,j]
+          B[i,j] = Base.cpad("", S[1,j])
+        end
+      end
+    end
+  end
+  B,S
 end
 
 
