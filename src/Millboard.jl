@@ -2,6 +2,7 @@ module Millboard
 
 export table
 
+__precompile__(true)
 
 # types
 
@@ -92,7 +93,7 @@ function Base.show(io::IO, linear::Linear)
                 print(io, lpad(string(join(unit.data[row,:], " "), " "), width+2))
               else
                 if 1==unit.rows
-                  if height==row
+                  if 1==row
                     print(io, lpad(string(unit.data, " "), width+2))
                   else
                     print(io, lpad(" ", width+2))
@@ -113,6 +114,7 @@ function Base.show(io::IO, linear::Linear)
       for i=1:len
         unit = linear[i]
         width = unit.width
+        #println("unit $unit width $width")
         if isa(unit, Vertical) && len==i
           print(io, lpad(string(unit), width))
         else
@@ -134,26 +136,28 @@ end
 
 # functions - cell
 
-function cell_for_row(row::Int, width::Int, height::Int)
+function cell_for_row(rowname::AbstractString, width::Int, height::Int)
   if height > 1
     a = Array{Union{AbstractString,Int}}(height)
     for i=1:height-1
       a[i] = ""
     end
-    a[height] = row
+    a[height] = rowname
     Cell(a[:,:], width, height, 1)
   else
-    Cell(row, width+1, height, 1)
+    Cell(rowname, width+1, height, 1)
   end
 end
 
-function cell_repr(b)
+function cell_repr(b, width)
   if isa(b, AbstractArray)
     crow,ccol = size(b[:,:])
     0==crow && return " "
     1==crow && return join(b, " ")
+    b
+  else
+    lpad(b, width)
   end
-  b
 end
 
 
@@ -166,10 +170,17 @@ function decking(mill::Mill)
   cellwidths = zeros(Int, rows, cols)
   cellrows = zeros(Int, rows, cols)
   cellcols = zeros(Int, rows, cols)
-  cellwidthmax = zeros(Int, 1, cols)
+  cellwidthmax = zeros(Int, cols)
+  if rows > 0
+    if haskey(mill.option, :colnames)
+      for (j,name) in enumerate(mill.option[:colnames])
+        cellwidthmax[j] = length(string(name))
+      end
+    end
+  end
   for i=1:rows
     for j=1:cols
-      b = cell_repr(board[i,j])
+      b = cell_repr(board[i,j], cellwidthmax[j])
       if isa(b, AbstractArray)
         crow,ccol = size(b[:,:])
         width = 0
@@ -186,12 +197,12 @@ function decking(mill::Mill)
   firstcellwidth = 2
   if rows > 0
     for j=1:cols
-      cellwidthmax[j] = maximum(cellwidths[:,j])
+      cellwidthmax[j] = maximum(vcat(cellwidths[:,j], cellwidthmax[j]))
     end
     for i=1:rows
       linear = Linear{Union{Cell,Vertical}}([])
       for j=1:cols
-        b = cell_repr(board[i,j])
+        b = cell_repr(board[i,j], cellwidthmax[j])
         cell = Cell(b, cellwidthmax[j], cellrows[i,j], cellcols[i,j])
         push!(linear, cell)
       end
@@ -201,6 +212,13 @@ function decking(mill::Mill)
     firstcellwidths = zeros(Int, rows)
     for i=1:rows
       firstcellwidths[i] = length(string(i))
+    end
+    if haskey(mill.option, :rownames)
+      for (i,name) in enumerate(mill.option[:rownames])
+        if rows >= i
+          firstcellwidths[i] = length(string(name))
+        end
+      end
     end
     firstcellwidth = maximum(firstcellwidths)
   end
@@ -212,13 +230,15 @@ function decking(mill::Mill)
     push!(h, Connector())
     push!(h, Dash(dash, firstcellwidth+2))
     push!(h, Connector())
-    for j=1:cols
-      push!(h, Dash(dash, cellwidthmax[j]+2))
-      push!(h, Connector())
-    end
     if rows > 0
-    else
-      push!(h, Dash(dash, 2))
+      for j=1:cols
+        push!(h, Dash(dash, cellwidthmax[j]+2))
+        push!(h, Connector())
+      end
+      if rows > 0
+      else
+        push!(h, Dash(dash, 2))
+      end
     end
     push!(deck, h)
   end
@@ -230,8 +250,17 @@ function decking(mill::Mill)
     push!(linear, Vertical(1))
     push!(linear, Cell(" ", firstcellwidth+1, 1, 1))
     push!(linear, Vertical(1))
+
+    colnames = map(1:cols) do j
+      string(j)
+    end
+    if haskey(mill.option, :colnames)
+      for (j,name) in enumerate(mill.option[:colnames])
+        colnames[j] = string(name)
+      end
+    end
     for j=1:cols
-      push!(linear, Cell(lpad(string(j), cellwidthmax[j]), cellwidthmax[j], 1, 1))
+      push!(linear, Cell(lpad(colnames[j], cellwidthmax[j]), cellwidthmax[j], 1, 1))
       push!(linear, Vertical(1))
     end
     push!(deck, linear)
@@ -239,19 +268,32 @@ function decking(mill::Mill)
 
   horizontal(deck, dash="=")
 
-  for i=1:rows
-    linear = Linear{Union{Cell,Vertical}}([])
-    push!(linear, Vertical(1))
-    height = maximum(cellrows[i,:])
-    push!(linear, cell_for_row(i, firstcellwidth, height))
-    plate = plates[i]
-    push!(linear, Vertical(height))
-    for j=1:length(plate)
-      push!(linear, plate[j])
-      push!(linear, Vertical(height))
+  if rows > 0
+    rownames = map(1:rows) do i
+      string(i)
     end
-    push!(deck, linear)
-    horizontal(deck)
+    if haskey(mill.option, :rownames)
+      for (i,name) in enumerate(mill.option[:rownames])
+        if rows >=  i
+          rownames[i] = string(name)
+        end
+      end
+    end
+
+    for i=1:rows
+      linear = Linear{Union{Cell,Vertical}}([])
+      push!(linear, Vertical(1))
+      height = maximum(cellrows[i,:])
+      push!(linear, cell_for_row(rownames[i], firstcellwidth, height))
+      plate = plates[i]
+      push!(linear, Vertical(height))
+      for j=1:length(plate)
+        push!(linear, plate[j])
+        push!(linear, Vertical(height))
+      end
+      push!(deck, linear)
+      horizontal(deck)
+    end
   end
   deck
 end
