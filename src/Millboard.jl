@@ -1,168 +1,266 @@
 module Millboard
 
-export Mill, table
+export table
+
+
+# types
 
 type Mill
-  board::Union{Array,Tuple}
+  board::Array
   option::Dict
-  Mill(board) = new(board, Dict())
-  Mill(board, option::Pair) = new(board, Dict(option))
-  Mill(board, option...) = new(board, Dict(option))
+  Mill(board, option::Dict) = new(board, option)
 end
 
-type Tile
-  clay::Array{AbstractString, 2}
-  breadth::Array{Int, 2}
+type Cell{T}
+  data::T
+  width::Int
+  rows::Int
+  cols::Int
 end
 
-function slate(tile::Tile)
-  width = ceil(Int, mean(tile.breadth))
-  m,n = size(tile.clay)
-  A = similar(tile.clay, AbstractString)
-  for i=1:m
-    for j=1:n
-      A[i,j] = lpad(tile.clay[i,j], width) 
-    end
+type Dash
+  data::AbstractString
+  repeat::Int
+  Dash(dash::AbstractString, n::Int) = new(dash, n)
+  Dash(n::Int) = new("-", n)
+end
+
+type Connector
+  data::AbstractString
+  Connector() = new("+")
+end
+
+type Vertical
+  width::Int
+  height::Int
+  data::AbstractString
+  Vertical(height) = new(1, height, "|")
+end
+
+typealias Linear{T<:Union{Cell,Vertical}} AbstractVector{T}
+typealias Horizontal{T<:Union{Dash,Connector}} AbstractVector{T}
+typealias Plate{T<:Union{Linear,Horizontal}} AbstractVector{T}
+
+
+# functions - show
+
+function Base.show(io::IO, dash::Dash)
+  print(io, repeat(dash.data, dash.repeat))
+end
+
+
+function Base.show(io::IO, mill::Mill)
+  print(io, decking(mill))
+end
+
+function Base.show(io::IO, horizontal::Horizontal)
+  for j=1:length(horizontal)
+    h = horizontal[j]
+    print(io, h)
   end
-  [join(A[i,:], " ") for i=1:m]
 end
 
-function cell(box::Array, option::Dict)
-  m,n = size(box[:,:])
-  0 == m && return [" "]
-  A = similar(box, AbstractString)
-  W = similar(box, Int)
-  box_repr = string
-  if haskey(option, :repr)
-    box_repr = option[:repr]
-  end
-  for i=1:m
-    for j=1:n
-      el = box[i,j] |> box_repr
-      A[i,j] = el
-      W[i,j] = length(el)
-    end
-  end
-  slate(Tile(A, W))
+function Base.show(io::IO, connector::Connector)
+  print(io, connector.data)
 end
 
-function cell(box::Number, option::Dict)
-  el = box |> string
-  A = [el][:,:]
-  W = [length(el)][:,:]
-  slate(Tile(A, W))
+function Base.show(io::IO, cell::Cell)
+  print(io, cell.data)
 end
 
+function Base.show(io::IO, vertical::Vertical)
+  print(io, vertical.data)
+end
 
-# table
-
-function table(mill::Mill)
-  B,S = table_board(mill.board, mill.option)
-  rows,cols = size(S)
-  buf = IOBuffer()
-  if haskey(mill.option, :title)
-    writeln(buf, border(S,"=","+"))
-    A = Array(AbstractString, 1, cols)
-    for j=1:cols
-      titles = mill.option[:title]
-      title = string(titles[j])
-      title_width = S[1,j] + 2
-      if haskey(mill.option, :has_long_title) && mill.option[:has_long_title]
-        A[1,j] = Base.cpad(title, title_width)
-      else
-        if length(title) > title_width
-          A[1,j] = Base.cpad(title[1:title_width], title_width)
-        else
-          A[1,j] = Base.cpad(title, title_width)
-        end
-      end
-    end
-    l = surround(join(A, "|"), space="")
-    writeln(buf, l)
-    writeln(buf, border(S,"=","+"))
+function Base.show(io::IO, linear::Linear)
+  firstunit = linear[2] # Cell
+  assert(isa(firstunit, Cell))
+  if isa(firstunit, Vertical)
+    print(io, firstunit)
   else
-    writeln(buf, border(S,"-","+"))
+    height = firstunit.rows
+    if height > 1
+      for row=1:height
+        for i=1:length(linear)
+          unit = linear[i]
+          width = unit.width
+          if isa(unit, Cell)
+            if 0==unit.rows
+              print(io, lpad("", width))
+            else
+              if isa(unit.data, AbstractArray)
+                print(io, lpad(string(join(unit.data[row,:], " "), " "), width+2))
+              else
+                if 1==unit.rows
+                  if height==row
+                    print(io, lpad(string(unit.data, " "), width+2))
+                  else
+                    print(io, lpad(" ", width+2))
+                  end
+                else
+                  print(io, lpad(unit.data, width+1))
+                end
+              end
+            end
+          else
+            print(io, lpad(unit, width))
+          end
+        end
+        row!=height && println(io)
+      end
+    else
+      len = length(linear)
+      for i=1:len
+        unit = linear[i]
+        width = unit.width
+        if isa(unit, Vertical) && len==i
+          print(io, lpad(string(unit), width))
+        else
+          print(io, lpad(string(unit, " "), width))
+        end
+      end
+    end
   end
-  for i=1:rows
-    l = join(B[i,:], " | ") |> surround
-    writeln(buf, l)
+end
+
+function Base.show(io::IO, plates::Plate)
+  for i=1:length(plates)
+    i>1 && println(io)
+    plate = plates[i]
+    print(io, plate)
   end
-  write(buf, border(S,"-","+"))
-  takebuf_string(buf)
 end
 
 
-function table_board(board::Tuple, option::Dict)
-  table_array(collect(board), option)
-end
+# functions - cell
 
-function table_board(board::Array, option::Dict)
-  if eltype(board) <: Number
-    table_number(board, option)
-  elseif eltype(board) <: Any
-    table_array(board, option)
+function cell_for_row(row::Int, width::Int, height::Int)
+  if height > 1
+    a = Array{Union{AbstractString,Int}}(height)
+    for i=1:height-1
+      a[i] = ""
+    end
+    a[height] = row
+    Cell(a[:,:], width, height, 1)
+  else
+    Cell(row, width+1, height, 1)
   end
 end
 
-function table_number(board::Array, option::Dict)
+function cell_repr(b)
+  if isa(b, AbstractArray)
+    crow,ccol = size(b[:,:])
+    0==crow && return " "
+    1==crow && return join(b, " ")
+  end
+  b
+end
+
+
+# functions - decking
+
+function decking(mill::Mill)
+  board = mill.board[:,:]
   rows,cols = size(board)
-  B = Array(Any, rows, cols)
-  S = similar(B, Int)
+  plates = Plate{Union{Linear,Horizontal}}([])
+  cellwidths = zeros(Int, rows, cols)
+  cellrows = zeros(Int, rows, cols)
+  cellcols = zeros(Int, rows, cols)
+  cellwidthmax = zeros(Int, 1, cols)
   for i=1:rows
     for j=1:cols
-      c = board[i,j] |> string
-      B[i,j] = c
-      if haskey(option, :has_long_title) && option[:has_long_title]
-        S[i,j] = max(option[:title][i], length(c))
+      b = cell_repr(board[i,j])
+      if isa(b, AbstractArray)
+        crow,ccol = size(b[:,:])
+        width = 0
+        for ci=1:crow
+          width = max(width, length(join(b[ci,:], " ")))
+        end
+        cellwidths[i,j],cellrows[i,j],cellcols[i,j] = width,crow,ccol
       else
-        S[i,j] = length(c)
+        cellwidths[i,j],cellrows[i,j],cellcols[i,j] = length(string(b)),1,1
       end
     end
   end
-  B,S
-end
 
-function table_array(board::AbstractArray, option::Dict)
-  cols = length(board)
-  rows = 0
-  for b in board
-    rows = max(rows, size(b, 1))
-  end
-  B = Array(Any, rows, cols)
-  S = similar(B, Int)
-  for j=1:cols
-    c = cell(board[j], option)
-    len_c = length(c)
+  firstcellwidth = 2
+  if rows > 0
+    for j=1:cols
+      cellwidthmax[j] = maximum(cellwidths[:,j])
+    end
     for i=1:rows
-      if len_c >= i
-        if haskey(option, :has_long_title) && option[:has_long_title]
-          S[i,j] = max(length(string(option[:title][j])), length(c[i]))
-          B[i,j] = Base.cpad(c[i], S[i,j])
-        else
-          S[i,j] = length(c[i])
-          B[i,j] = c[i]
-        end
-      else
-        if len_c > 0
-          S[i,j] = S[1,j]
-          B[i,j] = Base.cpad("", S[1,j])
-        end
+      linear = Linear{Union{Cell,Vertical}}([])
+      for j=1:cols
+        b = cell_repr(board[i,j])
+        cell = Cell(b, cellwidthmax[j], cellrows[i,j], cellcols[i,j])
+        push!(linear, cell)
       end
+      push!(plates, linear)
     end
+
+    firstcellwidths = zeros(Int, rows)
+    for i=1:rows
+      firstcellwidths[i] = length(string(i))
+    end
+    firstcellwidth = maximum(firstcellwidths)
   end
-  B,S
+
+  deck = Plate{Union{Linear,Horizontal}}([])
+
+  function horizontal(deck; dash="-")
+    h = Horizontal{Union{Dash,Connector}}([])
+    push!(h, Connector())
+    push!(h, Dash(dash, firstcellwidth+2))
+    push!(h, Connector())
+    for j=1:cols
+      push!(h, Dash(dash, cellwidthmax[j]+2))
+      push!(h, Connector())
+    end
+    if rows > 0
+    else
+      push!(h, Dash(dash, 2))
+    end
+    push!(deck, h)
+  end
+
+  if rows > 0
+    horizontal(deck, dash="=")
+
+    linear = Linear{Union{Cell,Vertical}}([])
+    push!(linear, Vertical(1))
+    push!(linear, Cell(" ", firstcellwidth+1, 1, 1))
+    push!(linear, Vertical(1))
+    for j=1:cols
+      push!(linear, Cell(lpad(string(j), cellwidthmax[j]), cellwidthmax[j], 1, 1))
+      push!(linear, Vertical(1))
+    end
+    push!(deck, linear)
+  end
+
+  horizontal(deck, dash="=")
+
+  for i=1:rows
+    linear = Linear{Union{Cell,Vertical}}([])
+    push!(linear, Vertical(1))
+    height = maximum(cellrows[i,:])
+    push!(linear, cell_for_row(i, firstcellwidth, height))
+    plate = plates[i]
+    push!(linear, Vertical(height))
+    for j=1:length(plate)
+      push!(linear, plate[j])
+      push!(linear, Vertical(height))
+    end
+    push!(deck, linear)
+    horizontal(deck)
+  end
+  deck
 end
 
 
-# border
-surround(s;space=" ", outer="|") = "$outer$space$s$space$outer"
+# functions - table
 
-function border(S, line, edge)
-  surround(join([repeat(line,n) for n in S[1,:]], "$line$edge$line"), space=line, outer=edge)
-end
-
-
-# io
-writeln(buf::IO, s) = write(buf, "$s\n")
+table(board::Array) = Mill(board, Dict())
+table(board::Array, option::Pair...) = Mill(board, Dict(option))
+table(board::Tuple, option::Pair...) = Mill(rotl90(collect(board)[:,:]), Dict(option))
 
 end # module
