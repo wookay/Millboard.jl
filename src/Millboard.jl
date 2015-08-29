@@ -121,43 +121,46 @@ Base.isless(::AbstractString, ::Symbol) = false
 
 
 # precell
-
 precell(::Void) = PreCell([][:,:], 0, 0)
 
-function precell(n::Number)
-  str = string(n)
-  PreCell([str][:,:], length(str), 1)
-end
-
-function precell(s::AbstractString)
-  if contains(s, "\n") 
-    a = split(s, "\n")[:,:]
+function precell(el::AbstractString)
+  if contains(el, "\n") 
+    a = map(split(el, "\n")) do x
+       width = strwidth(x)
+       string(x, repeat(" ", width-length(x)))
+    end[:,:]
     m,n = size(a)
     PreCell(a, maximum(map(length, a)), m)
   else
-    PreCell([s][:,:], length(s), 1)
+    width = strwidth(el)
+    PreCell([string(el, repeat(" ", width-length(el)))][:,:], width, 1)
   end
 end
 
-function precell(a::AbstractArray)
-  m,n = size(a[:,:])
+function precell(el::AbstractArray)
+  m,n = size(el[:,:])
   if 0==m
     PreCell([""][:,:], 0, 0)
   else
     widths = zeros(Int, m)
     prep = Vector{AbstractString}(m)
     @inbounds for i=1:m
-      prep[i] = join(a[i,:], " ")
+      prep[i] = join(map(el[i,:]) do x
+        str = string(x)
+        unicode_padding = strwidth(str) - length(str)
+        string(lpad(str, strwidth(str)), repeat(" ", unicode_padding))
+      end, " ")
       widths[i] = length(prep[i])
     end
     PreCell(prep[:,:], maximum(widths), m)
   end
 end
 
-function precell(sym::Symbol)
-  str = repr(sym)
+function precell(el::Any)
+  str = repr(el)
   PreCell([str][:,:], length(str), 1)
 end
+
 
 
 # postcell
@@ -169,7 +172,8 @@ function postcell(precell::PreCell, width::Int, height::Int, margin::Margin)
   @inbounds for i=1:rows
     for j=1:cols
       el = data[i,j]
-      A[i,j] = string(lpad(el, margin.leftside + width), repeat(" ", margin.rightside))
+      unicode_padding = strwidth(el) - length(el)
+      A[i,j] = string(lpad(el, margin.leftside + width+unicode_padding), repeat(" ", margin.rightside))
     end
   end
   Cell(A, width+margin.leftside+margin.rightside, height)
@@ -219,7 +223,9 @@ function decking(mill::Mill)
   end
   if haskey(option, :colnames)
     for (j,name) in enumerate(option[:colnames])
-      precols[j] = precell(name)
+      if cols >= j
+        precols[j] = precell(name)
+      end
     end
   end
   @inbounds for j=1:cols
@@ -236,7 +242,9 @@ function decking(mill::Mill)
   end
   if haskey(option, :rownames)
     for (i,name) in enumerate(option[:rownames])
-      prerows[i] = precell(name)
+      if rows >= i
+        prerows[i] = precell(name)
+      end
     end
   end
   @inbounds for i=1:rows
