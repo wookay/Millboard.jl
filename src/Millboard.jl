@@ -133,7 +133,7 @@ function precell(s::AbstractString)
   if contains(s, "\n") 
     a = split(s, "\n")[:,:]
     m,n = size(a)
-    PreCell(a, maximum(map(a) do x length(x) end), m)
+    PreCell(a, maximum(map(length, a)), m)
   else
     PreCell([s][:,:], length(s), 1)
   end
@@ -295,11 +295,9 @@ end
 
 
 # table
-table(board::Any) = table(board, Dict())
-table(board::Any, option::Pair...)= table(board, Dict(option))
-function table(board::AbstractArray, option::Dict)
-  Mill(board, option)
-end
+table{T}(board::T) = table(board, Dict())
+table{T}(board::T, option::Pair...) = table(board, Dict(option))
+table(board::AbstractArray, option::Dict) = Mill(board, option)
 function table(board::Tuple, option::Dict)
   if 0==length(board)
     Mill([], option)
@@ -323,5 +321,19 @@ function table(board::Dict, option::Dict)
     table(valuez, opt)
   end
 end 
+table{T<:Base.Enums.Enum}(board::T, option::Dict) = table(typeof(board), option)
+function table{T<:Base.Enums.Enum}(board::Type{T}, option::Dict)
+  opt = option
+  enums = instances(board)
+  opt[:rownames] = map(string, enums)
+  if !haskey(option, :colnames)
+    opt[:zerocolname] = string(board)
+    opt[:colnames] = ["value"]
+  end
+  valuez = collect(map(enums) do typename
+    string(Int(typename))
+  end)
+  table(valuez, opt)
+end
 
 end # module
