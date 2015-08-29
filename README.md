@@ -12,21 +12,19 @@ Windows: [![Build status](https://ci.appveyor.com/api/projects/status/3hjdk20juu
   (_)     | (_) (_)    |  Documentation: http://docs.julialang.org
    _ _   _| |_  __ _   |  Type "?help" for help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 0.4.0-dev+7036 (2015-08-27 14:47 UTC)
- _/ |\__'_|_|_|\__'_|  |  Commit 006537f (0 days old master)
+  | | |_| | | | (_| |  |  Version 0.4.0-pre+7089 (2015-08-28 22:04 UTC)
+ _/ |\__'_|_|_|\__'_|  |  Commit c321bf8 (0 days old master)
 |__/                   |  x86_64-apple-darwin14.5.0
 
-julia> Pkg.clone("https://github.com/wookay/Millboard.jl")
-INFO: Cloning Millboard from https://github.com/wookay/Millboard.jl
-INFO: Computing changes...
-INFO: No packages to install, update or remove
+julia> Pkg.add("Millboard")
+INFO: Installing Millboard v0.0.x
 
 julia> using Millboard
 INFO: Precompiling module Millboard...
 WARNING: replacing module Millboard
 ```
 
-# examples
+# example - numbers
 ```
 julia> using Millboard
 
@@ -70,11 +68,27 @@ julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["A" "B"])
 
 julia> board = ([1 2], [5 6;7 8], [9 10; 11 12]);
 
-julia> table(board, :rownames=>["result"], :colnames=>["x" "y" "z"])
+julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["result"])
 +========+=====+=====+=======+
 |        |   x |   y |     z |
 +========+=====+=====+=======+
 |        | 1 2 | 5 6 |  9 10 |
 | result |     | 7 8 | 11 12 |
 +--------+-----+-----+-------+
+```
+
+# example - strings
+```
+julia> using Millboard
+
+julia> board = ["Lorem ipsum\ndolor sit amet" 42];
+
+julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
++===========+================+====+
+|           |          first |  2 |
+|           |         column |    |
++===========+================+====+
+|           |    Lorem ipsum | 42 |
+| first row | dolor sit amet |    |
++-----------+----------------+----+
 ```
