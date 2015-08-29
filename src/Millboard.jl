@@ -15,12 +15,6 @@ immutable PreCell <: AbstractCell
   height::Int
 end
 
-type Cell <: AbstractCell
-  data::AbstractArray
-  width::Int
-  height::Int
-end
-
 immutable Vertical <: AbstractCell
   data::AbstractString
   width::Int
@@ -39,9 +33,11 @@ immutable Connector <: AbstractCell
   Connector() = new("+")
 end
 
-typealias Linear{T<:Union{AbstractCell}} AbstractVector{T}
-typealias Horizontal{T<:Union{Dash,Connector}} AbstractVector{T}
-typealias PlateVector{T<:Union{Linear,Horizontal}} AbstractVector{T}
+type Cell <: AbstractCell
+  data::AbstractArray
+  width::Int
+  height::Int
+end
 
 type Margin
   leftside::Int
@@ -54,8 +50,24 @@ type Mill
   Mill(board, option::Dict) = new(board, option)
 end
 
+typealias Linear{T<:Union{AbstractCell}} AbstractVector{T}
+typealias Horizontal{T<:Union{Dash,Connector}} AbstractVector{T}
+typealias PlateVector{T<:Union{Linear,Horizontal}} AbstractVector{T}
 
-# show
+
+# Base.show
+function Base.show(io::IO, vertical::Vertical)
+  print(io, vertical.data)
+end
+
+function Base.show(io::IO, dash::Dash)
+  print(io, repeat(dash.data, dash.repeat))
+end
+
+function Base.show(io::IO, connector::Connector)
+  print(io, connector.data)
+end
+
 function Base.show(io::IO, mill::Mill)
   print(io, decking(mill))
 end
@@ -85,6 +97,13 @@ function Base.show(io::IO, linear::Linear)
   end
 end
 
+function Base.show(io::IO, horizon::Horizontal)
+  for j=1:length(horizon)
+    hr = horizon[j]
+    print(io, hr)
+  end
+end
+
 function Base.show(io::IO, plates::PlateVector)
   len = length(plates)
   @inbounds for i=1:len
@@ -96,29 +115,15 @@ function Base.show(io::IO, plates::PlateVector)
   end
 end
 
-function Base.show(io::IO, dash::Dash)
-  print(io, repeat(dash.data, dash.repeat))
-end
 
-function Base.show(io::IO, connector::Connector)
-  print(io, connector.data)
-end
-
-function Base.show(io::IO, horizontal::Horizontal)
-  for j=1:length(horizontal)
-    h = horizontal[j]
-    print(io, h)
-  end
-end
-
-function Base.show(io::IO, vertical::Vertical)
-  print(io, vertical.data)
-end
+# Base.isless
+Base.isless(::AbstractString, ::Symbol) = false
 
 
 # precell
 
 precell(::Void) = PreCell([][:,:], 0, 0)
+
 function precell(n::Number)
   str = string(n)
   PreCell([str][:,:], length(str), 1)
@@ -145,8 +150,13 @@ function precell(a::AbstractArray)
       prep[i] = join(a[i,:], " ")
       widths[i] = length(prep[i])
     end
-    PreCell(prep[:,:], maximum(widths), n)
+    PreCell(prep[:,:], maximum(widths), m)
   end
+end
+
+function precell(sym::Symbol)
+  str = repr(sym)
+  PreCell([str][:,:], length(str), 1)
 end
 
 
@@ -165,15 +175,15 @@ function postcell(precell::PreCell, width::Int, height::Int, margin::Margin)
   Cell(A, width+margin.leftside+margin.rightside, height)
 end
 
-function horizon(maxwidths::Vector{Int}, cols::Int, margin::Margin; dash="-")
-  hr = Horizontal{Union{Dash,Connector}}([]) 
-  push!(hr, Connector())
+function horizontal(maxwidths::Vector{Int}, cols::Int, margin::Margin; dash="-")
+  horizon = Horizontal{Union{Dash,Connector}}([]) 
+  push!(horizon, Connector())
   @inbounds for j=1:cols
     width = maxwidths[j]
-    push!(hr, Dash(dash, width + margin.leftside + margin.rightside))
-    push!(hr, Connector())
+    push!(horizon, Dash(dash, width + margin.leftside + margin.rightside))
+    push!(horizon, Connector())
   end 
-  hr
+  horizon
 end
 
 function vertical(maxheight::Int)
@@ -185,18 +195,21 @@ function marginal(option::Dict)
 end
 
 function decking(mill::Mill)
-  board = mill.board
+  board = mill.board[:,:]
   option = mill.option
 
   # prepare precells
-  input = board[:,:]
   preplates = PlateVector{Union{Linear}}([])
-  rows,cols = size(input[:,:])
+  rows,cols = size(board)
   widths = zeros(Int, rows+1, cols+1)
   heights = zeros(Int, rows+1, cols+1)
 
   headlinear = Linear{Union{AbstractCell}}([])
-  cell = precell(nothing)
+  zerocolname = nothing
+  if haskey(option, :zerocolname)
+    zerocolname = option[:zerocolname]
+  end
+  cell = precell(zerocolname)
   widths[1,1] = cell.width
   heights[1,1] = cell.height
   push!(headlinear, cell)
@@ -233,7 +246,7 @@ function decking(mill::Mill)
     heights[1+i,1] = rownamecell.height
     push!(linear, rownamecell)
     for j=1:cols
-      cell = precell(input[i,j])
+      cell = precell(board[i,j])
       widths[1+i,1+j] = cell.width
       heights[1+i,1+j] = cell.height
       push!(linear, cell)
@@ -259,7 +272,7 @@ function decking(mill::Mill)
 
   # decking
   plates = PlateVector{Union{Linear,Horizontal}}([])
-  push!(plates, horizon(maxwidths, cols, margin, dash="="))
+  push!(plates, horizontal(maxwidths, cols, margin, dash="="))
   @inbounds for i=1:rows
     preplate = preplates[i]
     linear = Linear{Union{AbstractCell}}([])
@@ -275,21 +288,40 @@ function decking(mill::Mill)
       push!(linear, vertical(maxheights[i]))
     end
     push!(plates, linear)
-    push!(plates, horizon(maxwidths, cols, margin, dash=1==i ? "=" : "-"))
+    push!(plates, horizontal(maxwidths, cols, margin, dash=1==i ? "=" : "-"))
   end
   plates
 end
 
 
 # table
-table(board::AbstractArray) = Mill(board, Dict())
-table(board::AbstractArray, option::Pair...) = Mill(board, Dict(option))
-function table(board::Tuple, option::Pair...)
+table(board::Any) = table(board, Dict())
+table(board::Any, option::Pair...)= table(board, Dict(option))
+function table(board::AbstractArray, option::Dict)
+  Mill(board, option)
+end
+function table(board::Tuple, option::Dict)
   if 0==length(board)
-    Mill([], Dict(option))
+    Mill([], option)
   else
-    Mill(rotl90(collect(board)[:,:]), Dict(option))
+    Mill(rotl90(collect(board)[:,:]), option)
   end
 end
+function table(board::Dict, option::Dict)
+  if 0==length(board)
+    Mill([], option)
+  else
+    opt = option
+    if !haskey(option, :colnames)
+      opt[:zerocolname] = "key"
+      opt[:colnames] = ["value"]
+    end
+    opt[:rownames] = sort(collect(keys(board)))
+    valuez = map(opt[:rownames]) do key
+      board[key]
+    end
+    table(valuez, opt)
+  end
+end 
 
 end # module

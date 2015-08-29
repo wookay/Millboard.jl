@@ -1,16 +1,8 @@
 using Millboard
 using Base.Test
 
-board = []
-@test """\
-+==+""" == table(board) |> string
-
-board = ()
-@test """\
-+==+""" == table(board) |> string
-
 board = ["Lorem ipsum dolor sit amet"]
-@test """\
+@test """
 +===+============================+
 |   |                          1 |
 +===+============================+

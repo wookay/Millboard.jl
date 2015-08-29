@@ -92,3 +92,24 @@ julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
 | first row | dolor sit amet |    |
 +-----------+----------------+----+
 ```
+
+# example - dict
+```
+julia> using Millboard
+
+julia> board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3]);
+
+julia> table(board)
++=====+=======+
+| key | value |
++=====+=======+
+| 1x3 | 1 2 3 |
++-----+-------+
+|     | 1 2 3 |
+| 2x3 | 4 5 6 |
++-----+-------+
+|     |     1 |
+|     |     2 |
+| 3x1 |     3 |
++-----+-------+
+```
