@@ -74,16 +74,16 @@ arraysize(a::AbstractArray) = size(a[:,:])
 precell(::Void) = PreCell([], 0, 0)
 
 function precell(el::AbstractString)
-  if contains(el, "\n") 
+  if contains(el, "\n")
     a = map(split(el, "\n")) do x
        width = strwidth(x)
-       string(x, repeat(" ", width-length(x)))
+       string(x, repeat(" ", width-strwidth(x)))
     end
     m,n = arraysize(a)
     PreCell(a, maximum(map(length, a)), m)
   else
     width = strwidth(el)
-    PreCell([string(el, repeat(" ", width-length(el)))], width, 1)
+    PreCell([el], width, 1)
   end
 end
 
@@ -132,7 +132,7 @@ function postcell(precel::PreCell, width::Int, height::Int, margin::Margin)
     for j=1:cols
       el = data[i,j]
       x = isa(el, AbstractString) ? el : repr(el)
-      prep = repeat(" ", abs(margin.leftside + width - length(x)))
+      prep = repeat(" ", margin.leftside + width - strwidth(x))
       A[i,j] = string(prep, x, repeat(" ", margin.rightside))
     end
   end

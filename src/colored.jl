@@ -2,8 +2,16 @@
 
 
 # types
+type Colored
+  color::Symbol
+end
+
 type Coat
-  func::Function
+  color::Symbol
+  indexfunc::Function
+end
+
+type Coating
   color::Symbol
   data
 end
@@ -21,9 +29,11 @@ immutable ANSIEscapedString
 end
 
 
-# color
-colored(func::Function, color::Symbol) = check_have_color() && Coat(func, color, nothing)
-colored(func::Function, color::Symbol, data) = check_have_color() && func(Coat(func, color, data))
+# colored
+colored(color::Symbol) = check_have_color() && Colored(color)
+colored(color::Symbol, indexfunc::Function) = check_have_color() && Coat(color, indexfunc)
+colored(color::Symbol, indexfunc::Function, data) = check_have_color() && call(Coat(color, indexfunc), data)
+colored(color::Symbol, data) = check_have_color() && call(Coat(color, identity), data)
 
 function normal_color()
   @windows ? Base.text_colors[:bold] : Base.answer_color()
@@ -40,12 +50,12 @@ function check_have_color()
 end
 
 
-# Coat
-Base.endof(c::Coat) = endof(c.data)
-Base.ndims(c::Coat) = ndims(c.data)
-Base.size(c::Coat, row::Int) = size(c.data, row)
+# Coating : getindex
+Base.endof(c::Coating) = endof(c.data)
+Base.ndims(c::Coating) = ndims(c.data)
+Base.size(c::Coating, row::Int) = size(c.data, row)
 
-function Base.SubString{T<:Coat}(s::T, i::Int, j::Int)
+function Base.SubString{T<:Coating}(s::T, i::Int, j::Int)
   pre = i>1 ? s.data[1:i-1] : ""
   post = j<Base.length(s.data) ? s.data[j+1:end] : ""
   normal = normal_color()
@@ -53,65 +63,113 @@ function Base.SubString{T<:Coat}(s::T, i::Int, j::Int)
   ANSIEscapedString(string(normal, pre, ANSIEscaped(s.color, str), normal, post), strwidth(s.data), length(s.data))
 end
 
-Base.getindex{T<:Coat}(a::T) = getindex(a, 1)
-function Base.getindex{T<:Coat}(a::T, ind::Int)
-  m,n = arraysize(a.data)
-  A = Array{Any}(m,n)
-  A[:] = a.data
-  el = a.data[ind]
-  if isa(el, AbstractArray)
-    precel = precell(el)
-    el = join(map(precel.data) do x
-      lpad(x, precel.width)
-    end, "\n")
-  end
-  A[ind] = ANSIEscaped(a.color, el)
-  a.data = A
+function escape_precell(el::Any)
+  el
+end
+function escape_precell(el::AbstractArray)
+  precel = precell(el)
+  join(map(precel.data) do x
+    lpad(x, precel.width)
+  end, "\n")
 end
 
-function Base.getindex{T<:Coat}(a::T, ::Colon)
-  a.data = map(a.data[:]) do el
-    ANSIEscaped(a.color, el)
+Base.getindex{T<:Coating}(a::T) = getindex(a, 1)
+function Base.getindex{T<:Coating}(a::T, ind::Int)
+  if isa(a.data, AbstractString)
+    a.data = SubString(a, ind, ind)
+  else
+    m,n = arraysize(a.data)
+    A = Array{Any}(m,n)
+    A[:] = a.data
+    A[ind] = ANSIEscaped(a.color, escape_precell(a.data[ind]))
+    a.data = A
   end
 end
 
-function Base.getindex{T<:Coat}(a::T, rang::UnitRange)
+function Base.getindex{T<:Coating}(a::T, ::Colon)
+  if isa(a.data, AbstractString)
+    a.data = ANSIEscaped(a.color, a.data)
+  else
+    a.data = map(a.data[:]) do el
+      ANSIEscaped(a.color, escape_precell(el))
+    end
+  end
+end
+
+function Base.getindex{T<:Coating}(a::T, rang::UnitRange)
   if isa(a.data, AbstractString)
     a.data = SubString(a, rang.start, rang.stop)
   else
     m,n = arraysize(a.data)
     A = Array{Any}(m,n)
-    A[:] = map(string, a.data)
-    sub = map(a.data[rang]) do el
-      ANSIEscaped(a.color, el)
+    A[:] = a.data
+    A[rang] = map(a.data[rang]) do el
+      ANSIEscaped(a.color, escape_precell(el))
     end
-    A[rang] = sub
     a.data = A
   end
 end
 
-function Base.getindex{T<:Coat}(a::T, row, col)
+function Base.getindex{T<:Coating}(a::T, row, col)
   m,n = arraysize(a.data)
   A = Array{Any}(m,n)
   A[:] = a.data
   sub = map(a.data[row,col]) do el
-    ANSIEscaped(a.color, el)
+    ANSIEscaped(a.color, escape_precell(el))
   end
-  A[row,col] = sub
+  if !isa(sub, AbstractArray)
+    sub = [sub][:,:]
+  end
+  q,r = arraysize(sub)
+  if 1==q && 1==r
+    A[row,col] = sub[q,r]
+  else
+    A[row,col] = sub
+  end
   a.data = A
 end
 
-function call(coat::Coat, data::Union{AbstractArray,AbstractString,Tuple})
-  input = isa(data, Tuple) ? rotl90(collect(data)[:,:]) : data
-  c = Coat(coat.func, coat.color, input)
-  coated = coat.func(c)
-  c == coated ? getindex(c, :) : coated
+function Base.show(io::IO, c::Coating)
+  print(io, c.data)
+end
+
+coating(c::Coating, ::Type{AbstractArray}) = (a->a[:,:])(c)
+coating(c::Coating, ::Type{AbstractString}) = getindex(c, row)
+coating(c::Coating, ::Any) = ANSIEscaped(c.color, c.data)
+
+
+# Coat
+identityfunc(::AbstractArray) = a->a[:,:]
+identityfunc(::Any) = a->a
+
+call(coat::Coat, data::Function) = coating(Coating(coat.color, data), typeof(data))
+call(coat::Coat, input::Tuple) = call(coat, rotl90(collect(input)[:,:]))
+function call(coat::Coat, input)
+  c = Coating(coat.color, input)
+  coated = coat.indexfunc(c)
+  if c==coated
+    isa(input, AbstractArray) ? identityfunc(input)(c) : coating(c, typeof(input))
+  else
+    coated
+  end
+end
+
+
+# Colored
+call(c::Colored, data::Tuple) = call(c, rotl90(collect(data)[:,:]))
+call(c::Colored, data::AbstractArray) = call(Coat(c.color, identityfunc(data)), data)
+call(c::Colored, data::Any) = coating(Coating(c.color, data), typeof(data))
+
+function call(c::Colored, func::Function)
+  isgeneric(func) ? coating(Coating(c.color, func), typeof(func)) : Coat(c.color, func)
 end
 
 
 # ANSIEscaped
 Base.endof(ansi::ANSIEscaped) = endof(ansi.data)
-Base.next(ansi::ANSIEscaped, i::Int) = next(ansi.data, i)
+Base.start(ansi::ANSIEscaped) = start(ansi.data)
+Base.next(ansi::ANSIEscaped, b::Bool) = next(ansi.data, b)
+Base.done(ansi::ANSIEscaped, b::Bool) = done(ansi.data, b)
 Base.strwidth(ansi::ANSIEscaped) = strwidth(string(ansi.data))
 Base.length(ansi::ANSIEscaped) = length(string(ansi.data))
 Base.repr(ansi::ANSIEscaped) = ansi
@@ -142,7 +200,7 @@ function precell(el::ANSIEscaped)
     PreCell(a, maximum(widths), m)
   else
     width = strwidth(s)
-    PreCell([el], width, 1)
+    PreCell(isa(el.data, AbstractArray) ? el : [el], width, 1)
   end
 end
 
