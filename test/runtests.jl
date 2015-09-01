@@ -10,3 +10,7 @@ include(joinpath(dirname(@__FILE__),"tuples.jl"))
 include(joinpath(dirname(@__FILE__),"types.jl"))
 include(joinpath(dirname(@__FILE__),"unicode.jl"))
 include(joinpath(dirname(@__FILE__),"regex.jl"))
+
+if Base.have_color
+  include(joinpath(dirname(@__FILE__),"colored.jl"))
+end

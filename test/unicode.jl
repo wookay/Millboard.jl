@@ -1,8 +1,17 @@
 using Millboard
 using Base.Test
 
+board = ["🐕' 😘'" "😘'" "🐕'" "abc" "d\ne"]
+@test """
++===+=========+=====+=====+=====+===+
+|   |       1 |   2 |   3 |   4 | 5 |
++===+=========+=====+=====+=====+===+
+|   | 🐕' 😘'   | 😘'  | 🐕'  | abc | d |
+| 1 |         |     |     |     | e |
++---+---------+-----+-----+-----+---+""" == table(board) |> string
+
+
 codes = ['A', Char(0x1f415), '\U1f618']
-zerocolname = "code"
 board = hcat(codes, map(x -> x |> string |> strwidth, codes))
 @test """
 +=======+======+==========+
