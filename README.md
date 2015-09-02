@@ -113,3 +113,7 @@ julia> table(board)
 | 3x1 |     3 |
 +-----+-------+
 ```
+
+
+# example - colored
+![colored.png](https://raw.github.com/wookay/Millboard.jl/master/doc/colored.png)

@@ -164,6 +164,10 @@ function call(c::Colored, func::Function)
   isgeneric(func) ? coating(Coating(c.color, func), typeof(func)) : Coat(c.color, func)
 end
 
+function call(c::Colored, func::Function, data)
+  data |> call(c, func)
+end
+
 
 # ANSIEscaped
 Base.endof(ansi::ANSIEscaped) = endof(ansi.data)
