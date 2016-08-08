@@ -32,11 +32,11 @@ end
 # colored
 colored(color::Symbol) = check_have_color() && Colored(color)
 colored(color::Symbol, indexfunc::Function) = check_have_color() && Coat(color, indexfunc)
-colored(color::Symbol, indexfunc::Function, data) = check_have_color() && call(Coat(color, indexfunc), data)
-colored(color::Symbol, data) = check_have_color() && call(Coat(color, identity), data)
+colored(color::Symbol, indexfunc::Function, data) = check_have_color() && (Coat(color, indexfunc))(data)
+colored(color::Symbol, data) = check_have_color() && (Coat(color, identity))(data)
 
 function normal_color()
-  @windows ? Base.text_colors[:bold] : Base.answer_color()
+  is_windows() ? Base.text_colors[:bold] : Base.answer_color()
 end
 
 function check_have_color()
@@ -142,9 +142,9 @@ coating(c::Coating, ::Any) = ANSIEscaped(c.color, c.data)
 identityfunc(::AbstractArray) = a->a[:,:]
 identityfunc(::Any) = a->a
 
-call(coat::Coat, data::Function) = coating(Coating(coat.color, data), typeof(data))
-call(coat::Coat, input::Tuple) = call(coat, rotl90(collect(input)[:,:]))
-function call(coat::Coat, input)
+(coat::Coat)(data::Function) = coating(Coating(coat.color, data), typeof(data))
+(coat::Coat)(input::Tuple) = (coat)(rotl90(collect(input)[:,:]))
+function (coat::Coat)(input)
   c = Coating(coat.color, input)
   coated = coat.indexfunc(c)
   if c==coated
@@ -156,16 +156,16 @@ end
 
 
 # Colored
-call(c::Colored, data::Tuple) = call(c, rotl90(collect(data)[:,:]))
-call(c::Colored, data::AbstractArray) = call(Coat(c.color, identityfunc(data)), data)
-call(c::Colored, data::Any) = coating(Coating(c.color, data), typeof(data))
+(c::Colored)(data::Tuple) = (c)(rotl90(collect(data)[:,:]))
+(c::Colored)(data::AbstractArray) = (Coat(c.color, identityfunc(data)))(data)
+(c::Colored)(data::Any) = coating(Coating(c.color, data), typeof(data))
 
-function call(c::Colored, func::Function)
-  isgeneric(func) ? coating(Coating(c.color, func), typeof(func)) : Coat(c.color, func)
+function (c::Colored)(func::Function)
+  Coat(c.color, func)
 end
 
-function call(c::Colored, func::Function, data)
-  data |> call(c, func)
+function (c::Colored)(func::Function, data)
+  (c)(func)(data)
 end
 
 

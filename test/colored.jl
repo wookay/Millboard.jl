@@ -16,7 +16,7 @@ cyan = colored(:cyan)
 
 
 green = colored(:green)
-@test_colored "\e[1m\e[32msin\e[0m\e[1m" == sin |> green |> string
+@test_colored "Millboard.Coat(:green,sin)" == sin |> green |> string
 
 
 magenta = colored(:magenta)
