@@ -12,23 +12,25 @@ Windows: [![Build status](https://ci.appveyor.com/api/projects/status/3hjdk20juu
   (_)     | (_) (_)    |  Documentation: http://docs.julialang.org
    _ _   _| |_  __ _   |  Type "?help" for help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 0.4.0-pre+7089 (2015-08-28 22:04 UTC)
- _/ |\__'_|_|_|\__'_|  |  Commit c321bf8 (0 days old master)
-|__/                   |  x86_64-apple-darwin14.5.0
+  | | |_| | | | (_| |  |  Version 0.6.0-dev.57 (2016-08-06 08:14 UTC)
+ _/ |\__'_|_|_|\__'_|  |  Commit ec15da7* (1 day old master)
+|__/                   |  x86_64-apple-darwin16.0.0
 
 julia> Pkg.add("Millboard")
 INFO: Installing Millboard v0.0.x
 
 julia> using Millboard
 INFO: Precompiling module Millboard...
-WARNING: replacing module Millboard
 ```
 
 # example - numbers
 ```
 julia> using Millboard
 
-julia> board = [11 12 13; 21 22 23];
+julia> board = [11 12 13; 21 22 23]
+2×3 Array{Int64,2}:
+ 11  12  13
+ 21  22  23
 
 julia> table(board)
 +===+====+====+====+
@@ -66,7 +68,13 @@ julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["A" "B"])
 | B | 21 | 22 | 23 |
 +---+----+----+----+
 
-julia> board = ([1 2], [5 6;7 8], [9 10; 11 12]);
+julia> board = ([1 2], [5 6;7 8], [9 10; 11 12])
+(
+[1 2],
+
+[5 6; 7 8],
+
+[9 10; 11 12])
 
 julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["result"])
 +========+=====+=====+=======+
@@ -81,7 +89,9 @@ julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["result"])
 ```
 julia> using Millboard
 
-julia> board = ["Lorem ipsum\ndolor sit amet" 42];
+julia> board = ["Lorem ipsum\ndolor sit amet" 42]
+1×2 Array{Any,2}:
+ "Lorem ipsum\ndolor sit amet"  42
 
 julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
 +===========+================+====+
@@ -97,7 +107,11 @@ julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
 ```
 julia> using Millboard
 
-julia> board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3]);
+julia> board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3])
+Dict{String,Any} with 3 entries:
+  "3x1" => [1,2,3]
+  "2x3" => [1 2 3; 4 5 6]
+  "1x3" => [1 2 3]
 
 julia> table(board)
 +=====+=======+

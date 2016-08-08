@@ -23,7 +23,7 @@ immutable ANSIEscaped
 end
 
 immutable ANSIEscapedString
-  data::AbstractString
+  data::String
   strwidth::Int
   length::Int
 end
@@ -75,7 +75,7 @@ end
 
 Base.getindex{T<:Coating}(a::T) = getindex(a, 1)
 function Base.getindex{T<:Coating}(a::T, ind::Int)
-  if isa(a.data, AbstractString)
+  if isa(a.data, String)
     a.data = SubString(a, ind, ind)
   else
     m,n = arraysize(a.data)
@@ -87,7 +87,7 @@ function Base.getindex{T<:Coating}(a::T, ind::Int)
 end
 
 function Base.getindex{T<:Coating}(a::T, ::Colon)
-  if isa(a.data, AbstractString)
+  if isa(a.data, String)
     a.data = ANSIEscaped(a.color, a.data)
   else
     a.data = map(a.data[:]) do el
@@ -97,7 +97,7 @@ function Base.getindex{T<:Coating}(a::T, ::Colon)
 end
 
 function Base.getindex{T<:Coating}(a::T, rang::UnitRange)
-  if isa(a.data, AbstractString)
+  if isa(a.data, String)
     a.data = SubString(a, rang.start, rang.stop)
   else
     m,n = arraysize(a.data)
@@ -134,7 +134,6 @@ function Base.show(io::IO, c::Coating)
 end
 
 coating(c::Coating, ::Type{AbstractArray}) = (a->a[:,:])(c)
-coating(c::Coating, ::Type{AbstractString}) = getindex(c, row)
 coating(c::Coating, ::Any) = ANSIEscaped(c.color, c.data)
 
 
