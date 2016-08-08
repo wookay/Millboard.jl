@@ -16,7 +16,7 @@ cyan = colored(:cyan)
 
 
 green = colored(:green)
-@test_colored "\e[1m\e[32msin\e[0m\e[1m" == sin |> green |> string
+@test_colored "Millboard.Coat(:green,sin)" == sin |> green |> string
 
 
 magenta = colored(:magenta)
@@ -70,3 +70,21 @@ board = ([1 2], [5 6;7 8], [9 10; 11 12])
 @test_colored "+===+=====+=====+=======+\n|   |   1 |   2 |     3 |\n+===+=====+=====+=======+\n|   | \e[1m\e[36m1 2\e[0m\e[1m |\e[1m\e[36m 5 6\e[0m\e[1m |\e[1m\e[36m  9 10\e[0m\e[1m |\n| 1 |     |\e[1m\e[36m 7 8\e[0m\e[1m |\e[1m\e[36m 11 12\e[0m\e[1m |\n+---+-----+-----+-------+" == board |> cyan(b->b) |> table |> string
 @test_colored "+===+=====+=====+=======+\n|   |   1 |   2 |     3 |\n+===+=====+=====+=======+\n|   | \e[1m\e[36m1 2\e[0m\e[1m |\e[1m\e[36m 5 6\e[0m\e[1m |\e[1m\e[36m  9 10\e[0m\e[1m |\n| 1 |     |\e[1m\e[36m 7 8\e[0m\e[1m |\e[1m\e[36m 11 12\e[0m\e[1m |\n+---+-----+-----+-------+" == board |> cyan(b->b[:,:]) |> table |> string
 @test_colored "+===+=====+=====+=======+\n|   |   1 |   2 |     3 |\n+===+=====+=====+=======+\n|   | \e[1m\e[36m1 2\e[0m\e[1m | 5 6 |  9 10 |\n| 1 |     | 7 8 | 11 12 |\n+---+-----+-----+-------+" == board |> cyan(b->b[]) |> table |> string
+
+
+# coverage
+import Millboard: Coating, coating
+A = Coating(:green, [1,2,3])
+buf = IOBuffer()
+show(buf, A)
+coating(A, AbstractArray)
+coating(A, String)
+
+import Millboard: ANSIEscaped, ANSIEscapedString
+E = ANSIEscaped(:green, [1,2,3])	
+endof(E)
+next(E, true)
+
+s = ANSIEscapedString("hello", 5, 5)
+endof(s)
+next(s, 1)

@@ -63,7 +63,7 @@ end
 
 
 # Base.isless
-Base.isless(::AbstractString, ::Symbol) = false
+Base.isless(::String, ::Symbol) = false
 
 
 # arraysize
@@ -73,7 +73,7 @@ arraysize(a::AbstractArray) = size(a[:,:])
 # precell
 precell(::Void) = PreCell([], 0, 0)
 
-function precell(el::AbstractString)
+function precell(el::String)
   if contains(el, "\n")
     a = map(split(el, "\n")) do x
        width = strwidth(x)
@@ -92,7 +92,7 @@ function precell(el::AbstractArray)
   if 0==rows
     PreCell([""], 0, 0)
   else
-    prelines = similar(el, AbstractString)
+    prelines = similar(el, String)
     widths = zeros(Int, rows, cols)
     for i=1:rows
       for j=1:cols
@@ -106,9 +106,9 @@ function precell(el::AbstractArray)
       maxwidths[j] = maximum(widths[:,j])
     end
 
-    lines = AbstractArray{AbstractString}([])
+    lines = AbstractArray{String}([])
     for i=1:rows
-      line = AbstractArray{AbstractString}([])
+      line = AbstractArray{String}([])
       for (j,x) in enumerate(prelines[i,:])
         push!(line, lpad(x, maxwidths[j]))
       end
@@ -127,11 +127,11 @@ end
 function postcell(precel::PreCell, width::Int, height::Int, margin::Margin)
   data = precel.data
   rows,cols = arraysize(data)
-  A = Array{AbstractString}(rows, cols)
+  A = Array{String}(rows, cols)
   @inbounds for i=1:rows
     for j=1:cols
       el = data[i,j]
-      x = isa(el, AbstractString) ? el : repr(el)
+      x = isa(el, String) ? el : repr(el)
       prep = repeat(" ", margin.leftside + width - strwidth(x))
       A[i,j] = string(prep, x, repeat(" ", margin.rightside))
     end

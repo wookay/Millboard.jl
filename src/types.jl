@@ -8,20 +8,20 @@ immutable PreCell <: AbstractCell
 end
 
 immutable Vertical <: AbstractCell
-  data::AbstractString
+  data::String
   width::Int
   height::Int
   Vertical(height) = new("|", 1, height)
 end
 
 immutable Dash <: AbstractCell
-  data::AbstractString
+  data::String
   repeat::Int
-  Dash(dash::AbstractString, n::Int) = new(dash, n)
+  Dash(dash::String, n::Int) = new(dash, n)
 end
 
 immutable Connector <: AbstractCell
-  data::AbstractString
+  data::String
   Connector() = new("+")
 end
 
