@@ -1,7 +1,6 @@
 using Millboard
 using Base.Test
 
-
 board = ["한글"]
 @test """
 +===+======+

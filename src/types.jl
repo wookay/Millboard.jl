@@ -1,47 +1,47 @@
 # types
-abstract AbstractCell
+abstract type AbstractCell end
 
-immutable PreCell <: AbstractCell
+struct PreCell <: AbstractCell
   data::AbstractArray
   width::Int
   height::Int
 end
 
-immutable Vertical <: AbstractCell
+struct Vertical <: AbstractCell
   data::String
   width::Int
   height::Int
   Vertical(height) = new("|", 1, height)
 end
 
-immutable Dash <: AbstractCell
+struct Dash <: AbstractCell
   data::String
   repeat::Int
   Dash(dash::String, n::Int) = new(dash, n)
 end
 
-immutable Connector <: AbstractCell
+struct Connector <: AbstractCell
   data::String
   Connector() = new("+")
 end
 
-type Cell <: AbstractCell
+mutable struct Cell <: AbstractCell
   data::AbstractArray
   width::Int
   height::Int
 end
 
-type Margin
+struct Margin
   leftside::Int
   rightside::Int
 end
 
-type Mill
+struct Mill
   board::AbstractArray
   option::Dict
   Mill(board, option::Dict) = new(board, option)
 end
 
-typealias Linear{T<:Union{AbstractCell}} AbstractVector{T}
-typealias Horizontal{T<:Union{Dash,Connector}} AbstractVector{T}
-typealias PlateVector{T<:Union{Linear,Horizontal}} AbstractVector{T}
+const Linear{T<:Union{AbstractCell}} = AbstractVector{T}
+const Horizontal{T<:Union{Dash,Connector}} = AbstractVector{T}
+const PlateVector{T<:Union{Linear,Horizontal}} = AbstractVector{T}
