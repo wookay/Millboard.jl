@@ -1,6 +1,7 @@
 using Millboard
 using Base.Test
 
+
 board = ["Lorem ipsum dolor sit amet"]
 @test """
 +===+============================+
