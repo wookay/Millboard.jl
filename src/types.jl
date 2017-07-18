@@ -1,47 +1,55 @@
 # types
-abstract AbstractCell
 
-immutable PreCell <: AbstractCell
-  data::AbstractArray
-  width::Int
-  height::Int
+abstract type AbstractCell end
+
+struct DataCell <: AbstractCell
+    data::AbstractArray
+    width::Int
+    height::Int
 end
 
-immutable Vertical <: AbstractCell
-  data::String
-  width::Int
-  height::Int
-  Vertical(height) = new("|", 1, height)
+struct Vertical <: AbstractCell
+    data::String
+    width::Int
+    height::Int
+    Vertical(height::Int) = new("|", 1, height)
 end
 
-immutable Dash <: AbstractCell
-  data::String
-  repeat::Int
-  Dash(dash::String, n::Int) = new(dash, n)
+struct Dash <: AbstractCell
+    data::String
+    repeat::Int
+    Dash(dash::String, n::Int) = new(dash, n)
 end
 
-immutable Connector <: AbstractCell
-  data::String
-  Connector() = new("+")
+struct Connector <: AbstractCell
+    data::String
+    Connector(data::String) = new(data)
 end
 
-type Cell <: AbstractCell
-  data::AbstractArray
-  width::Int
-  height::Int
+mutable struct Cell <: AbstractCell
+    data::AbstractArray
+    width::Int
+    height::Int
 end
 
-type Margin
-  leftside::Int
-  rightside::Int
+mutable struct Margin
+    leftside::Int
+    rightside::Int
 end
 
-type Mill
-  board::AbstractArray
-  option::Dict
-  Mill(board, option::Dict) = new(board, option)
+struct Mill
+    board::AbstractArray
+    option::Dict
+    Mill(board, option::Dict) = new(board, option)
 end
 
-typealias Linear{T<:Union{AbstractCell}} AbstractVector{T}
-typealias Horizontal{T<:Union{Dash,Connector}} AbstractVector{T}
-typealias PlateVector{T<:Union{Linear,Horizontal}} AbstractVector{T}
+const Linear{T} = AbstractVector{T} where T <: Union{Cell, Vertical}
+const Horizontal{T} = AbstractVector{T} where T <: Union{Dash, Connector}
+const PlateVector{T} = AbstractVector{T} where T <: Union{Linear, Horizontal}
+
+struct TableMode
+    style::Symbol
+    corner_corner::Char
+    header_fillchar::Char
+    TableMode(style::Symbol; corner_corner::Char = '|', header_fillchar::Char = '-') = new(style, corner_corner, header_fillchar)
+end

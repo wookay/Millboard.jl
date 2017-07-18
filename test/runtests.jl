@@ -1,16 +1,17 @@
-using Millboard
-using Base.Test
+all_tests = []
+for (root, dirs, files) in walkdir(".")
+    for filename in files
+        !endswith(filename, ".jl") && continue
+        "runtests.jl" == filename && continue
+        filepath = joinpath(root, filename)[3:end]
+        !isempty(ARGS) && !any(x->startswith(filepath, x), ARGS) && continue
+        push!(all_tests, filepath)
+    end
+end
 
-include(joinpath(dirname(@__FILE__),"numbers.jl"))
-include(joinpath(dirname(@__FILE__),"strings.jl"))
-include(joinpath(dirname(@__FILE__),"dicts.jl"))
-include(joinpath(dirname(@__FILE__),"enums.jl"))
-include(joinpath(dirname(@__FILE__),"functions.jl"))
-include(joinpath(dirname(@__FILE__),"tuples.jl"))
-include(joinpath(dirname(@__FILE__),"types.jl"))
-include(joinpath(dirname(@__FILE__),"unicode.jl"))
-include(joinpath(dirname(@__FILE__),"regex.jl"))
-
-if Base.have_color
-  include(joinpath(dirname(@__FILE__),"colored.jl"))
+for (idx, filepath) in enumerate(all_tests)
+    numbering = string(idx, /, length(all_tests))
+    ts = Base.Test.@testset "$numbering $filepath" begin
+        include(filepath)
+    end
 end
