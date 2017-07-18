@@ -7,7 +7,7 @@ set_table_mode(:grid_tables)
 
 @test """
 +-----+-------+
-| RPS | value |
+| RPS | VALUE |
 +=====+=======+
 |  ✊ |     0 |
 +-----+-------+
@@ -18,7 +18,7 @@ set_table_mode(:grid_tables)
 
 @test """
 +-----+-------+
-| RPS | value |
+| RPS | VALUE |
 +=====+=======+
 |  ✊ |     0 |
 +-----+-------+

@@ -280,8 +280,8 @@ end
 function table(board::Dict; options...)
     option = Dict(options)
     if !haskey(option, :colnames)
-        option[:zerocolname] = "key"
-        option[:colnames] = ["value"]
+        option[:zerocolname] = "KEY"
+        option[:colnames] = ["VALUE"]
     end
     rownames = sort(collect(keys(board)))
     option[:rownames] = rownames
@@ -298,7 +298,7 @@ function table(board::Type{T}; options...) where T<:Base.Enums.Enum
     option[:rownames] = map(string, enums)
     if !haskey(option, :colnames)
         option[:zerocolname] = string(board)
-        option[:colnames] = ["value"]
+        option[:colnames] = ["VALUE"]
     end
     Mill(string.(Int.(collect(enums))), option)
 end

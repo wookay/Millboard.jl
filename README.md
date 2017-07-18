@@ -4,27 +4,31 @@ Linux, OSX: [![Build Status](https://api.travis-ci.org/wookay/Millboard.jl.svg?b
 Windows: [![Build status](https://ci.appveyor.com/api/projects/status/3hjdk20juucb3kiw?svg=true)](https://ci.appveyor.com/project/wookay/Millboard.jl)
 [![Coverage Status](https://coveralls.io/repos/wookay/Millboard.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/wookay/Millboard.jl?branch=master)
 
-# install
-```
+# Install
+```julia
 λ ~$ julia
                _
    _       _ _(_)_     |  A fresh approach to technical computing
-  (_)     | (_) (_)    |  Documentation: http://docs.julialang.org
+  (_)     | (_) (_)    |  Documentation: https://docs.julialang.org
    _ _   _| |_  __ _   |  Type "?help" for help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 0.6.0-dev.57 (2016-08-06 08:14 UTC)
- _/ |\__'_|_|_|\__'_|  |  Commit ec15da7* (1 day old master)
-|__/                   |  x86_64-apple-darwin16.0.0
+  | | |_| | | | (_| |  |  Version 0.6.0 (2017-06-19 13:05 UTC)
+ _/ |\__'_|_|_|\__'_|  |  Official http://julialang.org/ release
+|__/                   |  x86_64-apple-darwin13.4.0
 
 julia> Pkg.add("Millboard")
-INFO: Installing Millboard v0.0.x
+INFO: Installing Millboard v0.1.0
+
+julia> Pkg.checkout("Millboard")
+
+julia> Pkg.update("Millboard")
 
 julia> using Millboard
 INFO: Precompiling module Millboard...
 ```
 
-# example - numbers
-```
+# Example - numbers
+```julia
 julia> using Millboard
 
 julia> board = [11 12 13; 21 22 23]
@@ -33,7 +37,7 @@ julia> board = [11 12 13; 21 22 23]
  21  22  23
 
 julia> table(board)
-+===+====+====+====+
++---+----+----+----+
 |   |  1 |  2 |  3 |
 +===+====+====+====+
 | 1 | 11 | 12 | 13 |
@@ -41,8 +45,8 @@ julia> table(board)
 | 2 | 21 | 22 | 23 |
 +---+----+----+----+
 
-julia> table(board, :colnames=>["x" "y" "z"])
-+===+====+====+====+
+julia> table(board, colnames=["x" "y" "z"])
++---+----+----+----+
 |   |  x |  y |  z |
 +===+====+====+====+
 | 1 | 11 | 12 | 13 |
@@ -50,8 +54,8 @@ julia> table(board, :colnames=>["x" "y" "z"])
 | 2 | 21 | 22 | 23 |
 +---+----+----+----+
 
-julia> table(board, :rownames=>["A" "B"])
-+===+====+====+====+
+julia> table(board, rownames=["A" "B"])
++---+----+----+----+
 |   |  1 |  2 |  3 |
 +===+====+====+====+
 | A | 11 | 12 | 13 |
@@ -59,8 +63,8 @@ julia> table(board, :rownames=>["A" "B"])
 | B | 21 | 22 | 23 |
 +---+----+----+----+
 
-julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["A" "B"])
-+===+====+====+====+
+julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
++---+----+----+----+
 |   |  x |  y |  z |
 +===+====+====+====+
 | A | 11 | 12 | 13 |
@@ -68,33 +72,33 @@ julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["A" "B"])
 | B | 21 | 22 | 23 |
 +---+----+----+----+
 
-julia> board = ([1 2], [5 6;7 8], [9 10; 11 12])
-(
-[1 2],
+julia> board = ([1 2], [5 6; 7 8], [9 10; 11 12])
+([1 2], [5 6; 7 8], [9 10; 11 12])
 
-[5 6; 7 8],
-
-[9 10; 11 12])
-
-julia> table(board, :colnames=>["x" "y" "z"], :rownames=>["result"])
-+========+=====+=====+=======+
-|        |   x |   y |     z |
-+========+=====+=====+=======+
-|        | 1 2 | 5 6 |  9 10 |
-| result |     | 7 8 | 11 12 |
-+--------+-----+-----+-------+
+julia> table(board, colnames=["result"], rownames=["x" "y" "z"])
++---+--------+
+|   | result |
++===+========+
+| x |    1 2 |
++---+--------+
+|   |    5 6 |
+| y |    7 8 |
++---+--------+
+|   |   9 10 |
+| z |  11 12 |
++---+--------+
 ```
 
-# example - strings
-```
+# Example - strings
+```julia
 julia> using Millboard
 
 julia> board = ["Lorem ipsum\ndolor sit amet" 42]
 1×2 Array{Any,2}:
  "Lorem ipsum\ndolor sit amet"  42
 
-julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
-+===========+================+====+
+julia> table(board, colnames=["first\ncolumn"], rownames=["first row"])
++-----------+----------------+----+
 |           |          first |  2 |
 |           |         column |    |
 +===========+================+====+
@@ -103,19 +107,19 @@ julia> table(board, :colnames=>["first\ncolumn"], :rownames=>["first row"])
 +-----------+----------------+----+
 ```
 
-# example - dict
-```
+# Example - Dict
+```julia
 julia> using Millboard
 
 julia> board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3])
 Dict{String,Any} with 3 entries:
-  "3x1" => [1,2,3]
+  "3x1" => [1, 2, 3]
   "2x3" => [1 2 3; 4 5 6]
   "1x3" => [1 2 3]
 
 julia> table(board)
-+=====+=======+
-| key | value |
++-----+-------+
+| KEY | VALUE |
 +=====+=======+
 | 1x3 | 1 2 3 |
 +-----+-------+
@@ -129,5 +133,5 @@ julia> table(board)
 ```
 
 
-# example - colored
+# Example - colored
 ![colored.png](https://raw.github.com/wookay/Millboard.jl/master/doc/colored.png)
