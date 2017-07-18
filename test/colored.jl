@@ -1,22 +1,29 @@
 using Millboard
 using Base.Test
 
-set_table_mode(:grid_tables)
-
 macro test_colored(expr)
-  expected = expr.args[2]
-  code = expr.args[3]
-  orig = Base.remove_linenums!(Expr(:quote, code))
-  quote
-       let same = $expected == $code
-           println($code)
+    expected = expr.args[2]
+    code = expr.args[3]
+    orig = Base.remove_linenums!(Expr(:quote, code))
+    quote
+       let same = $expected == $(esc(code))
+           println($(esc(code)))
            if !same
-               println("@test_colored ", repr($code), " == ", $orig)
+               println("@test_colored ", repr($(esc(code))), " == ", $orig)
            end
        end
-  end
-  :( @test $expr )
+    end
+    :( @test $(esc(expr)) )
 end
+
+
+
+function test_colored_without_windows()
+
+os_iswindows = isdefined(Sys, :iswindows) ? Sys.iswindows() : is_windows()
+os_iswindows && return # not support colored on windows
+
+set_table_mode(:grid_tables)
 
 cyan = colored(:cyan)
 @test_colored "\e[36m1\e[39m\e[0m" == 1 |> cyan |> string
@@ -104,6 +111,12 @@ board = ([1 2], [5 6;7 8], [9 10; 11 12])
                             b[]
                         end
                     end))) |> table) |> string
+
+end # function test_colored_without_windows
+
+
+test_colored_without_windows()
+
 
 # coverage
 import Millboard: Coating, coating
