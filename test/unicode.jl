@@ -1,10 +1,11 @@
 using Millboard
 using Base.Test
 
+set_table_mode(:grid_tables)
 
 board = ["한글"]
 @test """
-+===+======+
++---+------+
 |   |    1 |
 +===+======+
 | 1 | 한글 |
@@ -13,7 +14,7 @@ board = ["한글"]
 
 board = ["한\n글"; "abc"]
 @test """
-+===+=====+
++---+-----+
 |   |   1 |
 +===+=====+
 |   |  한 |

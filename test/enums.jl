@@ -1,10 +1,12 @@
 using Millboard
 using Base.Test
 
+set_table_mode(:grid_tables)
+
 @enum RPS ✊  ✋  ✌️ 
 
 @test """
-+=====+=======+
++-----+-------+
 | RPS | value |
 +=====+=======+
 |  ✊ |     0 |
@@ -15,7 +17,7 @@ using Base.Test
 +-----+-------+""" == table(RPS) |> string
 
 @test """
-+=====+=======+
++-----+-------+
 | RPS | value |
 +=====+=======+
 |  ✊ |     0 |
