@@ -2,6 +2,7 @@ using Millboard
 using Compat.Test
 
 set_table_mode(:grid_tables)
+Base.eval(:(have_color = false))
 
 board = ["Lorem ipsum dolor sit amet"]
 @test """
@@ -48,3 +49,6 @@ board = ["Lorem ipsum\ndolor sit amet" 42]
 |           |    Lorem ipsum | 42 |
 | first row | dolor sit amet |    |
 +-----------+----------------+----+""" == table(board, colnames=["first\ncolumn"], rownames=["first row"]) |> string
+
+
+Base.eval(:(have_color = true))

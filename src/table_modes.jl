@@ -6,7 +6,7 @@ const table_modes = Dict(
 )
 
 display_style = Dict(
-    :table_mode => table_modes[:grid_tables],
+    :table_mode => table_modes[:markdown],
 )
 
 function set_table_mode(mode::Symbol)

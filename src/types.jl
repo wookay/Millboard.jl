@@ -6,6 +6,12 @@ struct DataCell <: AbstractCell
     data::AbstractArray
     width::Int
     height::Int
+    style::Union{Nothing,Dict}
+end
+
+struct ColoredString
+    data::String
+    style::Union{Nothing,Dict}
 end
 
 struct Vertical <: AbstractCell

@@ -3,7 +3,7 @@ __precompile__(true)
 module Millboard
 
 using Compat
-import Compat: undef, textwidth, occursin, pairs
+import Compat: Nothing, undef, textwidth, occursin, pairs, printstyled
 
 include("types.jl")
 

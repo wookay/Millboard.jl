@@ -2,6 +2,7 @@ using Millboard
 using Compat.Test
 
 set_table_mode(:grid_tables)
+Base.eval(:(have_color = false))
 
 @enum RPS ✊  ✋  ✌️ 
 
@@ -26,3 +27,6 @@ set_table_mode(:grid_tables)
 +-----+-------+
 |  ✌️ |     2 |
 +-----+-------+""" == table(✊ ) |> string
+
+
+Base.eval(:(have_color = true))

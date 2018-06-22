@@ -2,6 +2,7 @@ using Millboard
 using Compat.Test
 
 set_table_mode(:grid_tables)
+Base.eval(:(have_color = false))
 
 board = ["한글"]
 @test """
@@ -22,3 +23,6 @@ board = ["한\n글"; "abc"]
 +---+-----+
 | 2 | abc |
 +---+-----+""" == board |> table |> string
+
+
+Base.eval(:(have_color = true))

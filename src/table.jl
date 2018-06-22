@@ -1,4 +1,15 @@
+const colnames_style = Dict(:color=>:yellow,)
+const rownames_style = Dict(:color=>:cyan,)
+
 # Base.show
+function Base.show(io::IO, colored::ColoredString)
+    if Base.have_color && colored.style isa Dict
+         printstyled(io, colored.data, color=colored.style[:color])
+    else
+         print(io, colored.data)
+    end
+end
+
 function Base.show(io::IO, v::Vertical)
     print(io, v.data)
 end
@@ -40,10 +51,10 @@ function print_plate(io::IO, linear::Linear, isgridtables::Bool, islast::Bool)
                 end
             end
         end
-        if isgridtables
-            println(io)
-        else
+        if !isgridtables && i==height
             !islast && println(io)
+        else
+            println(io)
         end
     end
 end
@@ -73,26 +84,26 @@ arraysize(a::AbstractArray) = size(a[:,:])
 
 
 # precell
-precell(::Nothing) = DataCell([], 0, 0)
+precell(::Nothing, style=nothing) = DataCell([], 0, 0, style)
 
-function precell(el::String)
+function precell(el::String, style=nothing)
     if occursin("\n", el)
         a = map(split(el, "\n")) do x
             width = textwidth(x)
             string(x, repeat(" ", width-textwidth(x)))
         end
         m,n = arraysize(a)
-        DataCell(a, maximum(map(length, a)), m)
+        DataCell(a, maximum(map(length, a)), m, style)
     else
         width = textwidth(el)
-        DataCell([el], width, 1)
+        DataCell([el], width, 1, style)
     end
 end
 
-function precell(el::AbstractArray)
+function precell(el::AbstractArray, style=nothing)
     rows,cols = arraysize(el)
     if 0==rows
-        DataCell([""], 0, 0)
+        DataCell([""], 0, 0, style)
     else
         prelines = similar(el, String)
         widths = zeros(Int, rows, cols)
@@ -116,12 +127,12 @@ function precell(el::AbstractArray)
             end
             push!(lines, join(line, " "))
         end
-        DataCell(lines, sum(maxwidths) + (cols-1), rows)
+        DataCell(lines, sum(maxwidths) + (cols-1), rows, style)
     end
 end
 
-function precell(el::Any)
-    DataCell([el], length(repr(el)), 1)
+function precell(el::Any, style=nothing)
+    DataCell([el], length(repr(el)), 1, style)
 end
 
 
@@ -129,13 +140,13 @@ end
 function postcell(cell::DataCell, width::Int, height::Int, margin::Margin)
     data = cell.data
     rows,cols = arraysize(data)
-    A = Array{String}(undef, rows, cols)
+    A = Array{ColoredString}(undef, rows, cols)
     @inbounds for i=1:rows
         for j=1:cols
             el = data[i,j]
             x = isa(el, String) ? el : repr(el)
             prep = repeat(" ", margin.leftside + width - textwidth(x))
-            A[i,j] = string(prep, x, repeat(" ", margin.rightside))
+            A[i,j] = ColoredString(string(prep, x, repeat(" ", margin.rightside)), cell.style)
         end
     end
     Cell(A, width+margin.leftside+margin.rightside, height)
@@ -178,18 +189,18 @@ function decking(mill::Mill, tablemode::TableMode)
     if haskey(option, :zerocolname)
         zerocolname = option[:zerocolname]
     end
-    cel = precell(zerocolname)
+    cel = precell(zerocolname, colnames_style)
     widths[1,1] = cel.width
     heights[1,1] = cel.height
     push!(headlinear, cel)
     ols = Vector{DataCell}(undef, cols)
     for j=1:cols
-        ols[j] = precell(j)
+        ols[j] = precell(j, colnames_style)
     end
     if haskey(option, :colnames)
         @inbounds for (j,name) in enumerate(option[:colnames])
             if cols >= j
-                ols[j] = precell(name)
+                ols[j] = precell(name, colnames_style)
             end
         end
     end
@@ -203,12 +214,12 @@ function decking(mill::Mill, tablemode::TableMode)
 
     prerows = Vector{DataCell}(undef, rows)
     for i=1:rows
-        prerows[i] = precell(i)
+        prerows[i] = precell(i, rownames_style)
     end
     if haskey(option, :rownames)
         @inbounds for (i,name) in enumerate(option[:rownames])
             if rows >= i
-                prerows[i] = precell(name)
+                prerows[i] = precell(name, rownames_style)
             end
         end
     end
