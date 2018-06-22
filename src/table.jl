@@ -69,6 +69,8 @@ function print_plates(io::IO, plates::PlateVector, tablemode::TableMode)
 end
 
 function Base.show(io::IO, mill::Mill)
+    prepend_newline = display_style[:prepend_newline]
+    prepend_newline && println(io)
     tablemode = display_style[:table_mode]
     plates = decking(mill, tablemode)
     print_plates(io, plates, tablemode)
