@@ -1,9 +1,9 @@
 using Millboard
-using Base.Test
+using Compat.Test
 
 set_table_mode(:grid_tables)
 
-types = [AbstractString, Void]
+types = [AbstractString, String]
 board = [T.abstract for T=types]
 
 @test """
@@ -12,5 +12,5 @@ board = [T.abstract for T=types]
 +================+==========+
 | AbstractString |     true |
 +----------------+----------+
-|           Void |    false |
+|         String |    false |
 +----------------+----------+""" == table(board, colnames=["abstract"], rownames=types) |> string

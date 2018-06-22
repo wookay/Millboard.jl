@@ -1,43 +1,42 @@
+module test_tuples
+
 using Millboard
-using Base.Test
+using Compat.Test
 
 set_table_mode(:grid_tables)
 
-board = ()
-@test """
-""" == table(board) |> string
-
-
-board = ([],)
-@test """
-+---+---+
-|   | 1 |
-+===+===+
-| 1 |   |
-+---+---+""" == table(board) |> string
-
-
-board = ([1,2,3],)
-@test """
-+---+---+
-|   | 1 |
-+===+===+
-|   | 1 |
-|   | 2 |
-| 1 | 3 |
-+---+---+""" == table(board) |> string
-
-
-board = [()]
-@test """
-+---+----+
-|   |  1 |
-+===+====+
-| 1 | () |
-+---+----+""" == table(board) |> string
-
-
 @testset "display tuples" begin
+
+    board = ()
+    @test """
+    """ == table(board) |> string
+    
+    board = ([],)
+    @test """
+    +---+---+
+    |   | 1 |
+    +===+===+
+    | 1 |   |
+    +---+---+""" == table(board) |> string
+    
+    board = ([1,2,3],)
+    @test """
+    +---+---+
+    |   | 1 |
+    +===+===+
+    |   | 1 |
+    |   | 2 |
+    | 1 | 3 |
+    +---+---+""" == table(board) |> string
+    
+    board = [()]
+    @test """
+    +---+----+
+    |   |  1 |
+    +===+====+
+    | 1 | () |
+    +---+----+""" == table(board) |> string
+
     board = ((1,2,3),)
     @test """
     +---+-----------+
@@ -62,3 +61,5 @@ board = [()]
     | 1 | (1, 2, 3) | (4, 5, 6) |
     +---+-----------+-----------+""" == table(board) |> string
 end
+
+end # module test_tuples

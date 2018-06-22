@@ -22,7 +22,6 @@ end
 function print_plate(io::IO, linear::Linear, isgridtables::Bool, islast::Bool)
     isempty(linear) && return
     firstcell = first(linear)
-    assert(typeof(firstcell) in (Cell, Vertical))
     height = firstcell.height
     @inbounds for i=1:height
         for j=1:length(linear)
@@ -74,18 +73,18 @@ arraysize(a::AbstractArray) = size(a[:,:])
 
 
 # precell
-precell(::Void) = DataCell([], 0, 0)
+precell(::Nothing) = DataCell([], 0, 0)
 
 function precell(el::String)
-    if contains(el, "\n")
+    if occursin("\n", el)
         a = map(split(el, "\n")) do x
-            width = strwidth(x)
-            string(x, repeat(" ", width-strwidth(x)))
+            width = textwidth(x)
+            string(x, repeat(" ", width-textwidth(x)))
         end
         m,n = arraysize(a)
         DataCell(a, maximum(map(length, a)), m)
     else
-        width = strwidth(el)
+        width = textwidth(el)
         DataCell([el], width, 1)
     end
 end
@@ -99,7 +98,7 @@ function precell(el::AbstractArray)
         widths = zeros(Int, rows, cols)
         for i=1:rows
             for j=1:cols
-                s = replace(string(el[i,j]), "\n", " ")
+                s = replace(string(el[i,j]), "\n" => " ")
                 widths[i,j] = length(s)
                 prelines[i,j] = s
             end
@@ -130,12 +129,12 @@ end
 function postcell(cell::DataCell, width::Int, height::Int, margin::Margin)
     data = cell.data
     rows,cols = arraysize(data)
-    A = Array{String}(rows, cols)
+    A = Array{String}(undef, rows, cols)
     @inbounds for i=1:rows
         for j=1:cols
             el = data[i,j]
             x = isa(el, String) ? el : repr(el)
-            prep = repeat(" ", margin.leftside + width - strwidth(x))
+            prep = repeat(" ", margin.leftside + width - textwidth(x))
             A[i,j] = string(prep, x, repeat(" ", margin.rightside))
         end
     end
@@ -154,7 +153,7 @@ function horizontal(maxwidths::Vector{Int}, cols::Int, margin::Margin, tablemode
     horizon
 end
 
-function marginal(option::Dict)
+function marginal(option::Dict{Symbol,Any})
     Margin(1, 1) # fixed
 end
 
@@ -183,7 +182,7 @@ function decking(mill::Mill, tablemode::TableMode)
     widths[1,1] = cel.width
     heights[1,1] = cel.height
     push!(headlinear, cel)
-    ols = Vector{DataCell}(cols)
+    ols = Vector{DataCell}(undef, cols)
     for j=1:cols
         ols[j] = precell(j)
     end
@@ -202,7 +201,7 @@ function decking(mill::Mill, tablemode::TableMode)
     end
     push!(preplates, headlinear)
 
-    prerows = Vector{DataCell}(rows)
+    prerows = Vector{DataCell}(undef, rows)
     for i=1:rows
         prerows[i] = precell(i)
     end
@@ -266,34 +265,33 @@ function decking(mill::Mill, tablemode::TableMode)
     plates
 end
 
-
-# table
-table(board::Any; options...) = Mill([board], Dict(options))
-
-table(board::AbstractArray; options...) = Mill(board, Dict(options))
-
-function table(board::Tuple; options...)
-    option = Dict(options)
-    Mill(collect(board), option)
+function optiondict(options)::Dict{Symbol,Any}
+    if VERSION >= v"0.7.0-"
+        Dict{Symbol,Any}(pairs(options))
+    else
+        Dict{Symbol,Any}(collect(options))
+    end
 end
 
+# table
+table(board::Any; options...) = Mill([board], optiondict(options))
+table(board::AbstractArray; options...) = Mill(board, optiondict(options))
+table(board::Tuple; options...) = Mill(collect(board), optiondict(options))
+
 function table(board::Dict; options...)
-    option = Dict(options)
+    option = optiondict(options)
     if !haskey(option, :colnames)
         option[:zerocolname] = "KEY"
         option[:colnames] = ["VALUE"]
     end
     rownames = sort(collect(keys(board)))
     option[:rownames] = rownames
-    Mill(getindex.(board, rownames), option)
+    Mill(getindex.(Ref(board), rownames), option)
 end 
 
-function table(board::T; options...) where T <: Base.Enums.Enum
-    table(typeof(board), options...)
-end
-
-function table(board::Type{T}; options...) where T<:Base.Enums.Enum
-    option = Dict(options)
+table(board::T; options...) where {T<:Base.Enums.Enum} = table(typeof(board), options...)
+function table(board::Type{T}; options...) where {T<:Base.Enums.Enum}
+    option = optiondict(options)
     enums = instances(board)
     option[:rownames] = map(string, enums)
     if !haskey(option, :colnames)

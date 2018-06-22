@@ -1,5 +1,5 @@
 using Millboard
-using Base.Test
+using Compat.Test
 
 set_table_mode(:grid_tables)
 

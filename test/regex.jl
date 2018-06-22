@@ -1,21 +1,17 @@
 using Millboard
-using Base.Test
+using Compat.Test
 
 set_table_mode(:grid_tables)
 
 str = "The quick brown fox jumps over the lazy dog α,β,γ"
 regexz = [r"b[\w]*n", r"[\w]{4,}"]
-functions = [match, matchall]
+functions = [match]
 board = [func(regex, str) for regex=regexz, func=functions]
 @test """
-+-------------+---------------------+----------+
-|             |               match | matchall |
-+=============+=====================+==========+
-|  r"b[\\w]*n" | RegexMatch("brown") |    brown |
-+-------------+---------------------+----------+
-|             | RegexMatch("quick") |    quick |
-|             |                     |    brown |
-|             |                     |    jumps |
-|             |                     |     over |
-| r"[\\w]{4,}" |                     |     lazy |
-+-------------+---------------------+----------+""" == table(board, colnames=functions, rownames=regexz) |> string
++-------------+---------------------+
+|             |               match |
++=============+=====================+
+|  r"b[\\w]*n" | RegexMatch("brown") |
++-------------+---------------------+
+| r"[\\w]{4,}" | RegexMatch("quick") |
++-------------+---------------------+""" == table(board, colnames=functions, rownames=regexz) |> string
