@@ -1,25 +1,11 @@
 # Millboard
 
-# Install
-```julia
-λ ~$ julia
-               _
-   _       _ _(_)_     |  A fresh approach to technical computing
-  (_)     | (_) (_)    |  Documentation: https://docs.julialang.org
-   _ _   _| |_  __ _   |  Type "?help" for help.
-  | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 0.6.0 (2017-06-19 13:05 UTC)
- _/ |\__'_|_|_|\__'_|  |  Official http://julialang.org/ release
-|__/                   |  x86_64-apple-darwin13.4.0
 
-julia> Pkg.add("Millboard")
-INFO: Installing Millboard v0.1.0
-
-julia> Pkg.checkout("Millboard", "master")
-```
+Get julia data in a tablized format to arrange into rows and columns of cells.
 
 
-# Example - numbers
+# Example
+
 ```julia
 julia> using Millboard
 
@@ -27,24 +13,16 @@ julia> board = [11 12 13; 21 22 23]
 2×3 Array{Int64,2}:
  11  12  13
  21  22  23
+```
 
+* `table(x)` displays the data into the Markdown format.
+
+```julia
 julia> table(board)
 |   |  1 |  2 |  3 |
 |---|----|----|----|
 | 1 | 11 | 12 | 13 |
 | 2 | 21 | 22 | 23 |
-
-julia> table(board, colnames=["x" "y" "z"])
-|   |  x |  y |  z |
-|---|----|----|----|
-| 1 | 11 | 12 | 13 |
-| 2 | 21 | 22 | 23 |
-
-julia> table(board, rownames=["A" "B"])
-|   |  1 |  2 |  3 |
-|---|----|----|----|
-| A | 11 | 12 | 13 |
-| B | 21 | 22 | 23 |
 
 julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
 |   |  x |  y |  z |
@@ -54,7 +32,7 @@ julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
 ```
 
 
-* `Millboard.set_table_mode` : to change display mode
+* `Millboard.set_table_mode` : to change the display mode
   - `:markdown` (default)
   - `:grid`
 
@@ -121,4 +99,23 @@ julia> table(board)
 |     |     2 |
 | 3x1 |     3 |
 +-----+-------+
+```
+
+
+# Install
+
+```julia
+λ ~$ julia
+               _
+   _       _ _(_)_     |  A fresh approach to technical computing
+  (_)     | (_) (_)    |  Documentation: https://docs.julialang.org
+   _ _   _| |_  __ _   |  Type "?help" for help.
+  | | | | | | |/ _` |  |
+  | | |_| | | | (_| |  |  Version 0.6.0 (2017-06-19 13:05 UTC)
+ _/ |\__'_|_|_|\__'_|  |  Official http://julialang.org/ release
+|__/                   |  x86_64-apple-darwin13.4.0
+
+julia> Pkg.add("Millboard")
+
+julia> Pkg.checkout("Millboard", "master")
 ```
