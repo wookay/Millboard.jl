@@ -2,7 +2,7 @@
 
 const table_modes = Dict(
     :markdown => TableMode(:markdown; corner_corner = '|', header_fillchar = '-'),
-    :grid_tables => TableMode(:grid_tables; corner_corner = '+', header_fillchar = '='),
+    :grid => TableMode(:grid; corner_corner = '+', header_fillchar = '='),
 )
 
 display_style = Dict(

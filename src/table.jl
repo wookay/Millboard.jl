@@ -22,7 +22,7 @@ function Base.show(io::IO, connector::Connector)
     print(io, connector.data)
 end
 
-function print_plate(io::IO, horizon::Horizontal, isgridtables::Bool, islast::Bool)
+function print_plate(io::IO, horizon::Horizontal, tablemode::TableMode, islast::Bool)
     for j=1:length(horizon)
         hr = horizon[j]
         print(io, hr)
@@ -30,7 +30,7 @@ function print_plate(io::IO, horizon::Horizontal, isgridtables::Bool, islast::Bo
     !islast && println(io)
 end
 
-function print_plate(io::IO, linear::Linear, isgridtables::Bool, islast::Bool)
+function print_plate(io::IO, linear::Linear, tablemode::TableMode, islast::Bool)
     isempty(linear) && return
     firstcell = first(linear)
     height = firstcell.height
@@ -51,7 +51,7 @@ function print_plate(io::IO, linear::Linear, isgridtables::Bool, islast::Bool)
                 end
             end
         end
-        if !isgridtables && i==height
+        if tablemode.style==:markdown && i==height
             !islast && println(io)
         else
             println(io)
@@ -60,11 +60,10 @@ function print_plate(io::IO, linear::Linear, isgridtables::Bool, islast::Bool)
 end
 
 function print_plates(io::IO, plates::PlateVector, tablemode::TableMode)
-    isgridtables = :grid_tables == tablemode.style
     len = length(plates)
     @inbounds for i=1:len
         plate = plates[i]
-        print_plate(io, plate, isgridtables, i==len)
+        print_plate(io, plate, tablemode, i==len)
     end
 end
 
@@ -173,7 +172,6 @@ end
 function decking(mill::Mill, tablemode::TableMode)
     board = mill.board
     option = mill.option
-    isgridtables = :grid_tables == tablemode.style
     header_fillchar = string(tablemode.header_fillchar)
 
     rows,cols = arraysize(board)
@@ -256,7 +254,8 @@ function decking(mill::Mill, tablemode::TableMode)
         cols += 1
     end
 
-    isgridtables && push!(plates, horizontal(maxwidths, cols, margin, tablemode, dash="-"))
+    isgridmode = tablemode.style == :grid
+    isgridmode && push!(plates, horizontal(maxwidths, cols, margin, tablemode, dash="-"))
     @inbounds for i=1:rows
         linear = Linear{Union{Cell,Vertical}}([])
         preplate = preplates[i]
@@ -273,7 +272,7 @@ function decking(mill::Mill, tablemode::TableMode)
             push!(linear, Vertical(maxheight))
         end
         push!(plates, linear)
-        (1==i || isgridtables) && push!(plates, horizontal(maxwidths, cols, margin, tablemode, dash = 1==i ? header_fillchar : "-"))
+        (1==i || isgridmode) && push!(plates, horizontal(maxwidths, cols, margin, tablemode, dash = 1==i ? header_fillchar : "-"))
     end
     plates
 end

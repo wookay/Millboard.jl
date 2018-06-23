@@ -1,7 +1,7 @@
 using Millboard
 using Compat.Test
 
-set_table_mode(:markdown)
+Millboard.set_table_mode(:markdown)
 Base.eval(:(have_color = false))
 
 board = []

@@ -1,7 +1,7 @@
 using Millboard
 using Compat.Test
 
-set_table_mode(:grid_tables)
+Millboard.set_table_mode(:grid)
 Base.eval(:(have_color = false))
 
 str = "The quick brown fox jumps over the lazy dog α,β,γ"
