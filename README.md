@@ -35,6 +35,8 @@ julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
 | B | 21 | 22 | 23 |
 ```
 
+![table.svg](https://wookay.github.io/docs/Millboard.jl/assets/millboard/table.svg)
+
 
 * `Millboard.set_table_mode` : to change the display mode
   - `:markdown` (default)
@@ -108,20 +110,10 @@ julia> table(board)
 
 # Install
 
+`julia>` type `]` key
+
 ```julia
-λ ~$ julia
-               _
-   _       _ _(_)_     |  A fresh approach to technical computing
-  (_)     | (_) (_)    |  Documentation: https://docs.julialang.org
-   _ _   _| |_  __ _   |  Type "?help" for help.
-  | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 0.6.0 (2017-06-19 13:05 UTC)
- _/ |\__'_|_|_|\__'_|  |  Official http://julialang.org/ release
-|__/                   |  x86_64-apple-darwin13.4.0
-
-julia> Pkg.add("Millboard")
-
-julia> Pkg.checkout("Millboard", "master")
+(v0.7) pkg> add Millboard
 ```
 
 
