@@ -113,7 +113,7 @@ julia> table(board)
 `julia>` type `]` key
 
 ```julia
-(v0.7) pkg> add Millboard
+(v1.0) pkg> add Millboard
 ```
 
 
@@ -124,7 +124,7 @@ julia> table(board)
 [travis-url]: https://travis-ci.org/wookay/Millboard.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/3hjdk20juucb3kiw?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/wookay/Millboard.jl
+[appveyor-url]: https://ci.appveyor.com/project/wookay/millboard-jl
 
 [coverage-img]: https://coveralls.io/repos/wookay/Millboard.jl/badge.svg?branch=master&service=github
 [coverage-url]: https://coveralls.io/github/wookay/Millboard.jl?branch=master

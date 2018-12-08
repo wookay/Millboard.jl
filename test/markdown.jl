@@ -1,5 +1,5 @@
 using Millboard
-using Compat.Test
+using Test
 
 Millboard.set_table_mode(:markdown)
 Base.eval(:(have_color = false))

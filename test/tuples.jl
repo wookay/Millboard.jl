@@ -1,7 +1,7 @@
 module test_tuples
 
 using Millboard
-using Compat.Test
+using Test
 
 Millboard.set_table_mode(:grid)
 Base.eval(:(have_color = false))
