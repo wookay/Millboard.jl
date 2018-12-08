@@ -1,8 +1,8 @@
 # Millboard
 
-|  **Documentation**                        |  **Build Status**                                                                                   |
-|:-----------------------------------------:|:---------------------------------------------------------------------------------------------------:|
-|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][coverage-img]][coverage-url]  |
+|  **Documentation**                        |  **Build Status**                                                |
+|:-----------------------------------------:|:----------------------------------------------------------------:|
+|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url]  [![][codecov-img]][codecov-url]  |
 
 
 Get julia data in a tablized format to arrange into rows and columns of cells.
@@ -123,10 +123,5 @@ julia> table(board)
 [travis-img]: https://api.travis-ci.org/wookay/Millboard.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/wookay/Millboard.jl
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/3hjdk20juucb3kiw?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/wookay/millboard-jl
-
-[coverage-img]: https://coveralls.io/repos/wookay/Millboard.jl/badge.svg?branch=master&service=github
-[coverage-url]: https://coveralls.io/github/wookay/Millboard.jl?branch=master
-
-
+[codecov-img]: https://codecov.io/gh/wookay/Millboard.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/wookay/Millboard.jl/branch/master
