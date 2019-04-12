@@ -1,32 +1,23 @@
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
+Millboard.set_table_mode(:markdown)
 Base.eval(:(have_color = false))
 
-@enum RPS ✊  ✋  ✌️ 
+@enum RPS R P S
 
 @test """
-+-----+-------+
 | RPS | VALUE |
-+=====+=======+
-|  ✊ |     0 |
-+-----+-------+
-|  ✋ |     1 |
-+-----+-------+
-|  ✌️ |     2 |
-+-----+-------+""" == table(RPS) |> string
+|-----|-------|
+|   R |     0 |
+|   P |     1 |
+|   S |     2 |""" == table(RPS) |> string
 
 @test """
-+-----+-------+
 | RPS | VALUE |
-+=====+=======+
-|  ✊ |     0 |
-+-----+-------+
-|  ✋ |     1 |
-+-----+-------+
-|  ✌️ |     2 |
-+-----+-------+""" == table(✊ ) |> string
-
+|-----|-------|
+|   R |     0 |
+|   P |     1 |
+|   S |     2 |""" == table(R) |> string
 
 Base.eval(:(have_color = true))
