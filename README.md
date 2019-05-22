@@ -6,6 +6,7 @@
 
 
 Get julia data in a tablized format to arrange into rows and columns of cells.
+See also [PrettyTables.jl](https://github.com/ronisbr/PrettyTables.jl).
 
 
 # Example
