@@ -45,8 +45,8 @@ end
 
 struct Mill
     board::AbstractArray
-    option::Dict{Symbol,Any}
-    Mill(board, option::Dict{Symbol,Any}) = new(board, option)
+    option::Dict{Symbol, Any}
+    Mill(board; options...) = new(board, Dict{Symbol, Any}(options)) 
 end
 
 const Linear{T} = AbstractVector{T} where T <: Union{Cell, Vertical}

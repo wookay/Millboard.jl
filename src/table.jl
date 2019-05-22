@@ -277,38 +277,30 @@ function decking(mill::Mill, tablemode::TableMode)
     plates
 end
 
-function optiondict(options)::Dict{Symbol,Any}
-    if VERSION >= v"0.7.0-"
-        Dict{Symbol,Any}(pairs(options))
-    else
-        Dict{Symbol,Any}(collect(options))
-    end
-end
-
 # table
-table(board::Any; options...) = Mill([board], optiondict(options))
-table(board::AbstractArray; options...) = Mill(board, optiondict(options))
-table(board::Tuple; options...) = Mill(collect(board), optiondict(options))
+table(board::Any; options...) = Mill([board]; options...)
+table(board::AbstractArray; options...) = Mill(board; options...)
+table(board::Tuple; options...) = Mill(collect(board); options...)
 
 function table(board::Dict; options...)
-    option = optiondict(options)
-    if !haskey(option, :colnames)
-        option[:zerocolname] = "KEY"
-        option[:colnames] = ["VALUE"]
+    dict = Dict{Symbol, Any}(options)
+    if !haskey(dict, :colnames)
+        dict[:zerocolname] = "KEY"
+        dict[:colnames] = ["VALUE"]
     end
     rownames = sort(collect(keys(board)))
-    option[:rownames] = rownames
-    Mill(getindex.(Ref(board), rownames), option)
+    dict[:rownames] = rownames
+    Mill(getindex.(Ref(board), rownames); tuple(dict...)...)
 end 
 
 table(board::T; options...) where {T<:Base.Enums.Enum} = table(typeof(board), options...)
 function table(board::Type{T}; options...) where {T<:Base.Enums.Enum}
-    option = optiondict(options)
+    dict = Dict{Symbol, Any}(options)
     enums = instances(board)
-    option[:rownames] = map(string, enums)
-    if !haskey(option, :colnames)
-        option[:zerocolname] = string(board)
-        option[:colnames] = ["VALUE"]
+    dict[:rownames] = string.(enums)
+    if !haskey(dict, :colnames)
+        dict[:zerocolname] = string(board)
+        dict[:colnames] = ["VALUE"]
     end
-    Mill(string.(Int.(collect(enums))), option)
+    Mill(collect(Int.(enums)); tuple(dict...)...)
 end
