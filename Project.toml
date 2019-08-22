@@ -1,7 +1,7 @@
 authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
 name = "Millboard"
 uuid = "39ec1447-df44-5f4c-beaa-866f30b4d3b2"
-version = "0.3.0-DEV"
+version = "0.2.1-DEV"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -9,3 +9,6 @@ Jive = "ba5e3d4b-8524-549f-bc71-e76ad9e9deed"
 
 [targets]
 test = ["Test", "Jive"]
+
+[compat]
+julia = "1"
