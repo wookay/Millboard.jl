@@ -106,7 +106,7 @@ function precell(el::AbstractArray, style=nothing)
     if 0==rows
         DataCell([""], 0, 0, style)
     else
-        prelines = similar(el, String)
+        prelines = Array{String}(undef, size(el))
         widths = zeros(Int, rows, cols)
         for i=1:rows
             for j=1:cols
@@ -146,7 +146,8 @@ function postcell(cell::DataCell, width::Int, height::Int, margin::Margin)
         for j=1:cols
             el = data[i,j]
             x = isa(el, String) ? el : repr(el)
-            prep = repeat(" ", margin.leftside + width - textwidth(x))
+            padding = margin.leftside + width - textwidth(x)
+            prep = repeat(" ", padding > 0 ? padding : 0)
             A[i,j] = ColoredString(string(prep, x, repeat(" ", margin.rightside)), cell.style)
         end
     end
@@ -278,8 +279,39 @@ function decking(mill::Mill, tablemode::TableMode)
 end
 
 # table
-table(board::Any; options...) = Mill([board]; options...)
-table(board::AbstractArray; options...) = Mill(board; options...)
+function table(board::T; options...) where T
+    names = fieldnames(T)
+    if !isempty(names)
+        zerocolname = string(T)
+        options = merge(Dict(options), Dict(:zerocolname => zerocolname, :rownames => [""], :colnames => string.(names)))
+        a = collect(getfield.(Ref(board), names))
+        board = reshape(a, (1,length(a)))
+        Mill(board; options...)
+    else
+        Mill([board]; options...)
+    end
+end
+function table(board::AbstractArray; options...)
+    Mill(board; options...)
+end
+function table(board::Vector; options...)
+    isempty(board) && return Mill(board; options...)
+    first_eltype = (typeof ∘ first)(board)
+    if all(x -> x isa first_eltype, board)
+        if first_eltype <: NamedTuple
+            options = merge(Dict(options), Dict(:colnames => string.(keys(first(board)))))
+            board = hcat(vcat.(values.(board)...)...)
+        else
+            names = fieldnames(first_eltype)
+            if !(first_eltype <: Tuple) && !isempty(names)
+                zerocolname = string(:Vector, '{', first_eltype, '}')
+                options = merge(Dict(options), Dict(:zerocolname => zerocolname, :colnames => string.(names)))
+                board = hcat(vcat.(map(x -> getfield.(Ref(x), names), board)...)...)
+            end
+        end
+    end
+    Mill(board; options...)
+end
 table(board::Tuple; options...) = Mill(collect(board); options...)
 
 function table(board::Dict; options...)
