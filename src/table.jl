@@ -133,7 +133,13 @@ function precell(el::AbstractArray, style=nothing)
 end
 
 function precell(el::Any, style=nothing)
-    DataCell([el], length(repr(el)), 1, style)
+    str = sprint(show, el, context = :color => false)
+    l = split(str, '\n')
+    m = maximum(length.(l))
+    n = length(l)
+    str_color = sprint(show, el, context = :color => true)
+    l_color = split(str_color, '\n')
+    DataCell(rpad.(l_color, m), m, n, style)
 end
 
 
@@ -145,9 +151,10 @@ function postcell(cell::DataCell, width::Int, height::Int, margin::Margin)
     @inbounds for i=1:rows
         for j=1:cols
             el = data[i,j]
-            x = isa(el, String) ? el : repr(el)
-            padding = margin.leftside + width - textwidth(x)
-            prep = repeat(" ", padding > 0 ? padding : 0)
+            x = isa(el, AbstractString) ? el : repr(el)
+            str = replace(x, r"\e[[0-9;]*[mGKF]" => "")
+            padding = margin.leftside + width - textwidth(str)
+            prep = repeat(' ', padding > 0 ? padding : 0)
             A[i,j] = ColoredString(string(prep, x, repeat(" ", margin.rightside)), cell.style)
         end
     end
@@ -279,6 +286,11 @@ function decking(mill::Mill, tablemode::TableMode)
 end
 
 # table
+function table(board::Type{T}; options...) where T
+    options = merge(Dict(options), Dict(:zerocolname => T, :rownames => string.(fieldnames(T)), :colnames => [""]))
+    Mill(hcat(collect(fieldtypes(T))); options...)
+end
+
 function table(board::T; options...) where T
     names = fieldnames(T)
     if !isempty(names)
