@@ -23,7 +23,7 @@ function Base.show(io::IO, connector::Connector)
 end
 
 function print_plate(io::IO, horizon::Horizontal, tablemode::TableMode, islast::Bool)
-    for j=1:length(horizon)
+    @inbounds for j=1:length(horizon)
         hr = horizon[j]
         print(io, hr)
     end
@@ -108,7 +108,7 @@ function precell(el::AbstractArray, style=nothing)
     else
         prelines = Array{String}(undef, size(el))
         widths = zeros(Int, rows, cols)
-        for i=1:rows
+        @inbounds for i=1:rows
             for j=1:cols
                 s = replace(string(el[i,j]), "\n" => " ")
                 widths[i,j] = length(s)
@@ -116,12 +116,12 @@ function precell(el::AbstractArray, style=nothing)
             end
         end
         maxwidths = zeros(Int, cols)
-        for j=1:cols
+        @inbounds for j=1:cols
             maxwidths[j] = maximum(widths[:,j])
         end
 
         lines = AbstractArray{String}([])
-        for i=1:rows
+        @inbounds for i=1:rows
             line = AbstractArray{String}([])
             for (j,x) in enumerate(prelines[i,:])
                 push!(line, lpad(x, maxwidths[j]))
@@ -164,7 +164,7 @@ function horizontal(maxwidths::Vector{Int}, cols::Int, margin::Margin, tablemode
     corner_corner = string(tablemode.corner_corner)
     horizon = Horizontal{Union{Dash,Connector}}([])
     push!(horizon, Connector(corner_corner))
-    for j=1:cols
+    @inbounds for j=1:cols
         width = maxwidths[j]
         push!(horizon, Dash(dash, width + margin.leftside + margin.rightside))
         push!(horizon, Connector(corner_corner))
@@ -201,7 +201,7 @@ function decking(mill::Mill, tablemode::TableMode)
     heights[1,1] = cel.height
     push!(headlinear, cel)
     ols = Vector{DataCell}(undef, cols)
-    for j=1:cols
+    @inbounds for j=1:cols
         ols[j] = precell(j, colnames_style)
     end
     if haskey(option, :colnames)
@@ -211,7 +211,7 @@ function decking(mill::Mill, tablemode::TableMode)
             end
         end
     end
-    for j=1:cols
+    @inbounds for j=1:cols
         cel = ols[j]
         widths[1,j+1] = cel.width
         heights[1,j+1] = cel.height
@@ -220,7 +220,7 @@ function decking(mill::Mill, tablemode::TableMode)
     push!(preplates, headlinear)
 
     prerows = Vector{DataCell}(undef, rows)
-    for i=1:rows
+    @inbounds for i=1:rows
         prerows[i] = precell(i, rownames_style)
     end
     if haskey(option, :rownames)
@@ -230,7 +230,7 @@ function decking(mill::Mill, tablemode::TableMode)
             end
         end
     end
-    for i=1:rows
+    @inbounds for i=1:rows
         linear = Vector{Union{DataCell,Vertical}}([])
         rownamecell = prerows[i]
         widths[1+i,1] = rownamecell.width
@@ -246,11 +246,11 @@ function decking(mill::Mill, tablemode::TableMode)
     end
 
     maxwidths = zeros(Int, cols+1)
-    for j=1:cols+1
+    @inbounds for j=1:cols+1
         maxwidths[j] = maximum(widths[:,j])
     end
     maxheights = zeros(Int, rows+1)
-    for i=1:rows+1
+    @inbounds for i=1:rows+1
         maxheights[i] = maximum(heights[i,:])
     end
     margin = marginal(option)
