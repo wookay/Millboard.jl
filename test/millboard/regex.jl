@@ -10,9 +10,9 @@ functions = [match]
 board = [func(regex, str) for regex=regexz, func=functions]
 @test """
 +-------------+---------------------+
-|             |               match |
+|             | match               |
 +=============+=====================+
-|  r"b[\\w]*n" | RegexMatch("brown") |
+| r"b[\\w]*n"  | RegexMatch("brown") |
 +-------------+---------------------+
 | r"[\\w]{4,}" | RegexMatch("quick") |
 +-------------+---------------------+""" == table(board, colnames=functions, rownames=regexz) |> string

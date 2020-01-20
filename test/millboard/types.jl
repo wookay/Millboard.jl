@@ -14,8 +14,8 @@ board = A(5, [1, 2])
 +---+------+------+
 | A | val1 | val2 |
 +===+======+======+
-|   |    5 |    1 |
-|   |      |    2 |
+|   | 5    | 1    |
+|   |      | 2    |
 +---+------+------+""" == table(board) |> string
 
 board = Any[A(5, 6), A(7, 8)]
@@ -23,16 +23,16 @@ board = Any[A(5, 6), A(7, 8)]
 +-----------+------+------+
 | Vector{A} | val1 | val2 |
 +===========+======+======+
-|         1 |    5 |    6 |
+| 1         | 5    | 6    |
 +-----------+------+------+
-|         2 |    7 |    8 |
+| 2         | 7    | 8    |
 +-----------+------+------+""" == table(board) |> string
 
 @test """
 +---+------+------+
 | A | val1 | val2 |
 +===+======+======+
-|   |    5 |    6 |
+|   | 5    | 6    |
 +---+------+------+""" == table(A(5,6)) |> string
 
 types = [AbstractString, String]
@@ -41,9 +41,9 @@ board = [T.abstract for T=types]
 +----------------+----------+
 |                | abstract |
 +================+==========+
-| AbstractString |     true |
+| AbstractString | true     |
 +----------------+----------+
-|         String |    false |
+| String         | false    |
 +----------------+----------+""" == table(board, colnames=["abstract"], rownames=types) |> string
 
 Base.eval(:(have_color = true))

@@ -24,13 +24,13 @@ julia> board = [11 12 13; 21 22 23]
 
 ```julia
 julia> table(board)
-|   |  1 |  2 |  3 |
+|   | 1  | 2  | 3  |
 |---|----|----|----|
 | 1 | 11 | 12 | 13 |
 | 2 | 21 | 22 | 23 |
 
 julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
-|   |  x |  y |  z |
+|   | x  | y  | z  |
 |---|----|----|----|
 | A | 11 | 12 | 13 |
 | B | 21 | 22 | 23 |
@@ -51,17 +51,13 @@ julia> board = ([1 2], [5 6; 7 8], [9 10; 11 12])
 ([1 2], [5 6; 7 8], [9 10; 11 12])
 
 julia> table(board, colnames=["result"], rownames=["x" "y" "z"])
-+---+--------+
 |   | result |
-+===+========+
-| x |    1 2 |
-+---+--------+
-|   |    5 6 |
-| y |    7 8 |
-+---+--------+
-|   |   9 10 |
-| z |  11 12 |
-+---+--------+
+|---|--------|
+| x | 1 2    |
+|   | 5 6    |
+| y | 7 8    |
+|   |  9 10  |
+| z | 11 12  |
 ```
 
 
@@ -75,9 +71,9 @@ julia> Millboard.set_table_mode(:markdown)
 Millboard.TableMode(:markdown, '|', '-')
 
 julia> table(board, colnames=["first column"], rownames=["first row"])
-|           |   first column |  2 |
+|           | first column   | 2  |
 |-----------|----------------|----|
-|           |    Lorem ipsum | 42 |
+|           | Lorem ipsum    | 42 |
 | first row | dolor sit amet |    |
 ```
 
@@ -102,9 +98,9 @@ julia> table(board)
 |     | 1 2 3 |
 | 2x3 | 4 5 6 |
 +-----+-------+
-|     |     1 |
-|     |     2 |
-| 3x1 |     3 |
+|     | 1     |
+|     | 2     |
+| 3x1 | 3     |
 +-----+-------+
 ```
 

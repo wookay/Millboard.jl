@@ -150,12 +150,11 @@ function postcell(cell::DataCell, width::Int, height::Int, margin::Margin)
     A = Array{ColoredString}(undef, rows, cols)
     @inbounds for i=1:rows
         for j=1:cols
-            el = data[i,j]
-            x = isa(el, AbstractString) ? el : repr(el)
+            x = data[i,j]
             str = replace(x, r"\e[[0-9;]*[mGKF]" => "")
-            padding = margin.leftside + width - textwidth(str)
+            padding = margin.leftside + width - textwidth(str) - 1
             prep = repeat(' ', padding > 0 ? padding : 0)
-            A[i,j] = ColoredString(string(prep, x, repeat(" ", margin.rightside)), cell.style)
+            A[i,j] = ColoredString(string(' ', x, prep, repeat(" ", margin.rightside)), cell.style)
         end
     end
     Cell(A, width+margin.leftside+margin.rightside, height)
