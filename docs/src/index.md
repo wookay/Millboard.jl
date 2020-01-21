@@ -1,7 +1,9 @@
-# Millboard
+# Millboard.jl
 
+<https://github.com/wookay/Millboard.jl>
 
 Get julia data in a tablized format to arrange into rows and columns of cells.
+See also [PrettyTables.jl](https://github.com/ronisbr/PrettyTables.jl).
 
 
 # Example
@@ -9,96 +11,57 @@ Get julia data in a tablized format to arrange into rows and columns of cells.
 ```julia
 julia> using Millboard
 
-julia> board = [11 12 13; 21 22 23]
+julia> A = [11 12 13; 21 22 23]
 2×3 Array{Int64,2}:
  11  12  13
  21  22  23
-```
 
-* `table(x)` displays the data into the Markdown format.
-
-```julia
-julia> table(board)
-|   |  1 |  2 |  3 |
+julia> table(A)
+|   | 1  | 2  | 3  |
 |---|----|----|----|
 | 1 | 11 | 12 | 13 |
 | 2 | 21 | 22 | 23 |
 
-julia> table(board, colnames=["x" "y" "z"], rownames=["A" "B"])
-|   |  x |  y |  z |
-|---|----|----|----|
-| A | 11 | 12 | 13 |
-| B | 21 | 22 | 23 |
 ```
 
-![table.svg](./assets/millboard/table.svg)
+![table.svg](https://wookay.github.io/docs/Millboard.jl/assets/millboard/table.svg)
 
 
-* `Millboard.set_table_mode` : to change the display mode
-  - `:markdown` (default)
-  - `:grid`
+# Example - Calendars
+
+using [Calendars.jl](https://github.com/wookay/Calendars.jl)
 
 ```julia
-julia> Millboard.set_table_mode(:grid)
-Millboard.TableMode(:grid, '+', '=')
+julia> using Millboard
 
-julia> board = ([1 2], [5 6; 7 8], [9 10; 11 12])
-([1 2], [5 6; 7 8], [9 10; 11 12])
+julia> using Calendars
 
-julia> table(board, colnames=["result"], rownames=["x" "y" "z"])
-+---+--------+
-|   | result |
-+===+========+
-| x |    1 2 |
-+---+--------+
-|   |    5 6 |
-| y |    7 8 |
-+---+--------+
-|   |   9 10 |
-| z |  11 12 |
-+---+--------+
-```
+julia> table([VerticalCalendar() VerticalCalendar(Month(3))' VerticalCalendar(Week(1)) VerticalCalendar(Day(-20))'])
+|   | 1                  | 2                         | 3         | 4                         |
+|---|--------------------|---------------------------|-----------|---------------------------|
+|   |     2020           |      Su Mo Tu We Th Fr Sa |     2020  |      Su Mo Tu We Th Fr Sa |
+|   |     Jan            | Jan            1  2  3  4 |     Jan   | Jan            1  2  3  4 |
+|   |         5 12 19 26 | 2020  5  6  7  8  9 10 11 |        26 | 2020  5  6  7  8  9 10 11 |
+|   | Mon     6 13 20 27 |      12 13 14 15 16 17 18 | Mon 20    |      12 13 14 15 16 17 18 |
+|   |         7 14 21 28 |      19 20 21 22 23 24 25 |     21    |      19 20 21             |
+|   | Wed  1  8 15 22 29 | Feb  26 27 28 29 30 31  1 | Wed 22    |                           |
+|   |      2  9 16 23 30 |       2  3  4  5  6  7  8 |     23    |                           |
+|   | Fri  3 10 17 24 31 |       9 10 11 12 13 14 15 | Fri 24    |                           |
+|   |      4 11 18 25    |      16 17 18 19 20 21 22 |     25    |                           |
+|   |                    |      23 24 25 26 27 28 29 |           |                           |
+|   |                    | Mar   1  2  3  4  5  6  7 |           |                           |
+|   |                    |       8  9 10 11 12 13 14 |           |                           |
+|   |                    |      15 16 17 18 19 20 21 |           |                           |
+|   |                    |      22 23 24 25 26 27 28 |           |                           |
+| 1 |                    |      29 30 31             |           |                           |
 
-
-# Example - strings
-```julia
-julia> board = ["Lorem ipsum\ndolor sit amet" 42]
-1×2 Array{Any,2}:
- "Lorem ipsum\ndolor sit amet"  42
-
-julia> Millboard.set_table_mode(:markdown)
-Millboard.TableMode(:markdown, '|', '-')
-
-julia> table(board, colnames=["first column"], rownames=["first row"])
-|           |   first column |  2 |
-|-----------|----------------|----|
-|           |    Lorem ipsum | 42 |
-| first row | dolor sit amet |    |
 ```
 
 
-# Example - Dict
+# Install
+
+`julia>` type `]` key
+
 ```julia
-julia> Millboard.set_table_mode(:grid)
-Millboard.TableMode(:grid, '+', '=')
-
-julia> board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3])
-Dict{String,Array{Int64,N} where N} with 3 entries:
-  "3x1" => [1, 2, 3]
-  "2x3" => [1 2 3; 4 5 6]
-  "1x3" => [1 2 3]
-
-julia> table(board)
-+-----+-------+
-| KEY | VALUE |
-+=====+=======+
-| 1x3 | 1 2 3 |
-+-----+-------+
-|     | 1 2 3 |
-| 2x3 | 4 5 6 |
-+-----+-------+
-|     |     1 |
-|     |     2 |
-| 3x1 |     3 |
-+-----+-------+
+(v1.3) pkg> add Millboard
 ```
