@@ -1,97 +1,69 @@
+module test_millboard_numbers
+
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
-Base.eval(:(have_color = false))
+Millboard.set_table_mode(:markdown)
 
 board = []
-@test """
-""" == table(board) |> string
-
+@test sprint(show, table(board)) == """
+"""
 
 board = [11 12 13; 21 22 23]
-@test """
-+---+----+----+----+
+@test sprint(show, table(board)) == """
 |   | 1  | 2  | 3  |
-+===+====+====+====+
+|---|----|----|----|
 | 1 | 11 | 12 | 13 |
-+---+----+----+----+
-| 2 | 21 | 22 | 23 |
-+---+----+----+----+""" == table(board) |> string
-
+| 2 | 21 | 22 | 23 |"""
 
 board = ([1 2], [5 6;7 8], [9 10; 11 12])
-@test """
-+---+-------+
+@test sprint(show, table(board)) == """
 |   | 1     |
-+===+=======+
+|---|-------|
 | 1 | 1 2   |
-+---+-------+
 |   | 5 6   |
 | 2 | 7 8   |
-+---+-------+
 |   |  9 10 |
-| 3 | 11 12 |
-+---+-------+""" == table(board) |> string
+| 3 | 11 12 |"""
 
-@test """
-+---+--------+
+@test sprint(show, table(board, colnames=["result"], rownames=["x", "y", "z"])) == """
 |   | result |
-+===+========+
+|---|--------|
 | x | 1 2    |
-+---+--------+
 |   | 5 6    |
 | y | 7 8    |
-+---+--------+
 |   |  9 10  |
-| z | 11 12  |
-+---+--------+""" == table(board, colnames=["result"], rownames=["x", "y", "z"]) |> string
-
+| z | 11 12  |"""
 
 board = ([1 2], [5 6;7 8], [9 10; 11 12])
-@test """
-+---+-------+
+@test sprint(show, table(board)) == """
 |   | 1     |
-+===+=======+
+|---|-------|
 | 1 | 1 2   |
-+---+-------+
 |   | 5 6   |
 | 2 | 7 8   |
-+---+-------+
 |   |  9 10 |
-| 3 | 11 12 |
-+---+-------+""" == table(board) |> string
-
+| 3 | 11 12 |"""
 
 board = ([], [5 6;7 8], [9 10; 11 12])
-@test """
-+---+-------+
+@test sprint(show, table(board)) == """
 |   | 1     |
-+===+=======+
+|---|-------|
 | 1 |       |
-+---+-------+
 |   | 5 6   |
 | 2 | 7 8   |
-+---+-------+
 |   |  9 10 |
-| 3 | 11 12 |
-+---+-------+""" == table(board) |> string
-
+| 3 | 11 12 |"""
 
 board = ([1 2;3 4], [5 6;7 8], [9 10; 11 12])
-@test """
-+---+-------+
+@test sprint(show, table(board)) == """
 |   | 1     |
-+===+=======+
+|---|-------|
 |   | 1 2   |
 | 1 | 3 4   |
-+---+-------+
 |   | 5 6   |
 | 2 | 7 8   |
-+---+-------+
 |   |  9 10 |
-| 3 | 11 12 |
-+---+-------+""" == table(board) |> string
+| 3 | 11 12 |"""
 
-
-Base.eval(:(have_color = true))
+end # module test_millboard_numbers

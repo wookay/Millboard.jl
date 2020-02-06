@@ -1,38 +1,29 @@
+module test_millboard_dicts
+
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
-Base.eval(:(have_color = false))
+Millboard.set_table_mode(:markdown)
 
 board = Dict()
-@test table(board) |> string == ""
-
+@test sprint(show, table(board)) == ""
 
 board = Dict(:a=>:b, "a"=>"b")
-@test table(board) |> string == """
-+-----+-------+
+@test sprint(show, table(board)) == """
 | KEY | VALUE |
-+=====+=======+
+|-----|-------|
 | :a  | :b    |
-+-----+-------+
-| a   | b     |
-+-----+-------+"""
-
+| a   | b     |"""
 
 board = Dict("1x3"=>[1 2 3], "2x3"=>[1 2 3; 4 5 6], "3x1"=> [1; 2; 3])
-@test table(board) |> string == """
-+-----+-------+
+@test sprint(show, table(board)) == """
 | KEY | VALUE |
-+=====+=======+
+|-----|-------|
 | 1x3 | 1 2 3 |
-+-----+-------+
 |     | 1 2 3 |
 | 2x3 | 4 5 6 |
-+-----+-------+
 |     | 1     |
 |     | 2     |
-| 3x1 | 3     |
-+-----+-------+"""
+| 3x1 | 3     |"""
 
-
-Base.eval(:(have_color = true))
+end # module test_millboard_dicts

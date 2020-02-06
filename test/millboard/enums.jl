@@ -1,23 +1,24 @@
+module test_millboard_enums
+
 using Millboard
 using Test
 
 Millboard.set_table_mode(:markdown)
-Base.eval(:(have_color = false))
 
 @enum RPS R P S
 
-@test """
+@test sprint(show, table(RPS)) == """
 | RPS | VALUE |
 |-----|-------|
 | R   | 0     |
 | P   | 1     |
-| S   | 2     |""" == table(RPS) |> string
+| S   | 2     |"""
 
-@test """
+@test sprint(show, table(R)) == """
 | RPS | VALUE |
 |-----|-------|
 | R   | 0     |
 | P   | 1     |
-| S   | 2     |""" == table(R) |> string
+| S   | 2     |"""
 
-Base.eval(:(have_color = true))
+end # module test_millboard_enums

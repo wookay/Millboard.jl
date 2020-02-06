@@ -286,14 +286,15 @@ end
 
 # table
 function table(board::Type{T}; options...) where T
-    options = merge(Dict(options), Dict(:zerocolname => T, :rownames => string.(fieldnames(T)), :colnames => [""]))
+    zerocolname = (String ∘ nameof)(T)
+    options = merge(Dict(options), Dict(:zerocolname => zerocolname, :rownames => string.(fieldnames(T)), :colnames => [""]))
     Mill(hcat(collect(fieldtypes(T))); options...)
 end
 
 function table(board::T; options...) where T
     names = fieldnames(T)
     if !isempty(names)
-        zerocolname = string(T)
+        zerocolname = (String ∘ nameof)(T)
         options = merge(Dict(options), Dict(:zerocolname => zerocolname, :rownames => [""], :colnames => string.(names)))
         a = collect(getfield.(Ref(board), names))
         board = reshape(a, (1,length(a)))
@@ -315,7 +316,7 @@ function table(board::Vector; options...)
         else
             names = fieldnames(first_eltype)
             if !(first_eltype <: Tuple) && !isempty(names)
-                zerocolname = string(:Vector, '{', first_eltype, '}')
+                zerocolname = string(:Vector, '{', (String ∘ nameof)(first_eltype), '}')
                 options = merge(Dict(options), Dict(:zerocolname => zerocolname, :colnames => string.(names)))
                 board = hcat(vcat.(map(x -> getfield.(Ref(x), names), board)...)...)
             end
@@ -340,9 +341,9 @@ table(board::T; options...) where {T<:Base.Enums.Enum} = table(typeof(board), op
 function table(board::Type{T}; options...) where {T<:Base.Enums.Enum}
     dict = Dict{Symbol, Any}(options)
     enums = instances(board)
-    dict[:rownames] = string.(enums)
+    dict[:rownames] = (String ∘ Symbol).(enums)
     if !haskey(dict, :colnames)
-        dict[:zerocolname] = string(board)
+        dict[:zerocolname] = (String ∘ nameof)(board)
         dict[:colnames] = ["VALUE"]
     end
     Mill(collect(Int.(enums)); tuple(dict...)...)

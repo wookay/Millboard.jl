@@ -1,8 +1,9 @@
+module test_millboard_types
+
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
-Base.eval(:(have_color = false))
+Millboard.set_table_mode(:markdown)
 
 struct A
     val1
@@ -10,40 +11,30 @@ struct A
 end
 
 board = A(5, [1, 2])
-@test """
-+---+------+------+
+@test sprint(show, table(board)) == """
 | A | val1 | val2 |
-+===+======+======+
+|---|------|------|
 |   | 5    | 1    |
-|   |      | 2    |
-+---+------+------+""" == table(board) |> string
+|   |      | 2    |"""
 
 board = Any[A(5, 6), A(7, 8)]
-@test """
-+-----------+------+------+
+@test sprint(show, table(board)) == """
 | Vector{A} | val1 | val2 |
-+===========+======+======+
+|-----------|------|------|
 | 1         | 5    | 6    |
-+-----------+------+------+
-| 2         | 7    | 8    |
-+-----------+------+------+""" == table(board) |> string
+| 2         | 7    | 8    |"""
 
-@test """
-+---+------+------+
+@test sprint(show, table(A(5,6))) == """
 | A | val1 | val2 |
-+===+======+======+
-|   | 5    | 6    |
-+---+------+------+""" == table(A(5,6)) |> string
+|---|------|------|
+|   | 5    | 6    |"""
 
 types = [AbstractString, String]
 board = [T.abstract for T=types]
-@test """
-+----------------+----------+
+@test sprint(show, table(board, colnames=["abstract"], rownames=types)) == """
 |                | abstract |
-+================+==========+
+|----------------|----------|
 | AbstractString | true     |
-+----------------+----------+
-| String         | false    |
-+----------------+----------+""" == table(board, colnames=["abstract"], rownames=types) |> string
+| String         | false    |"""
 
-Base.eval(:(have_color = true))
+end # module test_millboard_types

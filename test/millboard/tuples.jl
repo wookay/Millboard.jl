@@ -1,67 +1,50 @@
-module test_tuples
+module test_millboard_tuples
 
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
-Base.eval(:(have_color = false))
-
+Millboard.set_table_mode(:markdown)
 
 board = ()
-@test """
-""" == table(board) |> string
+@test sprint(show, table(board)) == """
+"""
 
 board = ([],)
-@test """
-+---+---+
+@test sprint(show, table(board)) == """
 |   | 1 |
-+===+===+
-| 1 |   |
-+---+---+""" == table(board) |> string
+|---|---|
+| 1 |   |"""
 
 board = ([1,2,3],)
-@test """
-+---+---+
+@test sprint(show, table(board)) == """
 |   | 1 |
-+===+===+
+|---|---|
 |   | 1 |
 |   | 2 |
-| 1 | 3 |
-+---+---+""" == table(board) |> string
+| 1 | 3 |"""
 
 board = [()]
-@test """
-+---+----+
+@test sprint(show, table(board)) == """
 |   | 1  |
-+===+====+
-| 1 | () |
-+---+----+""" == table(board) |> string
+|---|----|
+| 1 | () |"""
 
 board = ((1,2,3),)
-@test """
-+---+-----------+
+@test sprint(show, table(board)) == """
 |   | 1         |
-+===+===========+
-| 1 | (1, 2, 3) |
-+---+-----------+""" == table(board) |> string
+|---|-----------|
+| 1 | (1, 2, 3) |"""
 
 board = [(1,2,3)]
-@test """
-+---+-----------+
+@test sprint(show, table(board)) == """
 |   | 1         |
-+===+===========+
-| 1 | (1, 2, 3) |
-+---+-----------+""" == table(board) |> string
+|---|-----------|
+| 1 | (1, 2, 3) |"""
 
 board = [(1,2,3) (4,5,6)]
-@test """
-+---+-----------+-----------+
+@test sprint(show, table(board)) == """
 |   | 1         | 2         |
-+===+===========+===========+
-| 1 | (1, 2, 3) | (4, 5, 6) |
-+---+-----------+-----------+""" == table(board) |> string
-
-
-Base.eval(:(have_color = true))
+|---|-----------|-----------|
+| 1 | (1, 2, 3) | (4, 5, 6) |"""
 
 end # module test_tuples

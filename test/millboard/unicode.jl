@@ -1,28 +1,22 @@
+module test_millboard_unicode
+
 using Millboard
 using Test
 
-Millboard.set_table_mode(:grid)
-Base.eval(:(have_color = false))
+Millboard.set_table_mode(:markdown)
 
 board = ["한글"]
-@test """
-+---+------+
+@test sprint(show, table(board)) == """
 |   | 1    |
-+===+======+
-| 1 | 한글 |
-+---+------+""" == board |> table |> string
-
+|---|------|
+| 1 | 한글 |"""
 
 board = ["한\n글"; "abc"]
-@test """
-+---+-----+
+@test sprint(show, table(board)) == """
 |   | 1   |
-+===+=====+
+|---|-----|
 |   | 한  |
 | 1 | 글  |
-+---+-----+
-| 2 | abc |
-+---+-----+""" == board |> table |> string
+| 2 | abc |"""
 
-
-Base.eval(:(have_color = true))
+end # module test_millboard_unicode
