@@ -3,7 +3,7 @@ const rownames_style = Dict(:color=>:cyan,)
 
 # Base.show
 function Base.show(io::IO, colored::ColoredString)
-    if Base.have_color && colored.style isa Dict
+    if Base.have_color == true && colored.style !== nothing
          printstyled(io, colored.data, color=colored.style[:color])
     else
          print(io, colored.data)
@@ -51,7 +51,7 @@ function print_plate(io::IO, linear::Linear, tablemode::TableMode, islast::Bool)
                 end
             end
         end
-        if tablemode.style==:markdown && i==height
+        if tablemode.style === :markdown && i==height
             !islast && println(io)
         else
             println(io)
@@ -261,7 +261,7 @@ function decking(mill::Mill, tablemode::TableMode)
         cols += 1
     end
 
-    isgridmode = tablemode.style == :grid
+    isgridmode = tablemode.style === :grid
     isgridmode && push!(plates, horizontal(maxwidths, cols, margin, tablemode, dash="-"))
     @inbounds for i=1:rows
         linear = Linear{Union{Cell,Vertical}}([])
