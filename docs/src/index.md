@@ -12,7 +12,7 @@ See also [PrettyTables.jl](https://github.com/ronisbr/PrettyTables.jl).
 julia> using Millboard
 
 julia> A = [11 12 13; 21 22 23]
-2×3 Array{Int64,2}:
+2×3 Matrix{Int64}:
  11  12  13
  21  22  23
 
