@@ -1,8 +1,8 @@
 # Millboard.jl
 
-|  **Documentation**                        |  **Build Status**                                                |
-|:-----------------------------------------:|:----------------------------------------------------------------:|
-|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url]  [![][codecov-img]][codecov-url]  |
+|  **Documentation**                        |  **Build Status**                                                  |
+|:-----------------------------------------:|:------------------------------------------------------------------:|
+|  [![][docs-latest-img]][docs-latest-url]  |  [![][actions-img]][actions-url]  [![][codecov-img]][codecov-url]  |
 
 
 Get julia data in a tablized format to arrange into rows and columns of cells.
@@ -73,8 +73,8 @@ julia> table([VerticalCalendar() VerticalCalendar(Month(3))' VerticalCalendar(We
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://wookay.github.io/docs/Millboard.jl
 
-[travis-img]: https://api.travis-ci.org/wookay/Millboard.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/wookay/Millboard.jl
+[actions-img]: https://github.com/wookay/Millboard.jl/workflows/CI/badge.svg
+[actions-url]: https://github.com/wookay/Millboard.jl/actions
 
 [codecov-img]: https://codecov.io/gh/wookay/Millboard.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/wookay/Millboard.jl/branch/master
