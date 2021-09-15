@@ -30,7 +30,7 @@ board = Any[A(5, 6), A(7, 8)]
 |   | 5    | 6    |"""
 
 types = [AbstractString, String]
-board = [T.abstract for T=types]
+board = isabstracttype.(types)
 @test sprint(show, table(board, colnames=["abstract"], rownames=types)) == """
 |                | abstract |
 |----------------|----------|
